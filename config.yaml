@@ -1,2 +1,9 @@
 system:
-  addr: ":8081"
+  addr: ":8082"
+  database:
+    mysqlhost: "localhost"
+    mysqlport: "3306"
+    mysqluser: "root"
+    mysqlpassword: "root"
+    mysqldatabasename: "kube"
+
