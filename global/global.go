@@ -2,12 +2,12 @@ package global
 
 import (
 	"gorm.io/gorm"
-	"k8s.io/client-go/kubernetes"
 	"kube-auto/config"
+	"kube-auto/utils"
 )
 
 var (
 	CONF             config.Server
-	KubeConfigSet    *kubernetes.Clientset
 	MysqlDataConnect *gorm.DB
+	ActionMessage    utils.ActionMessage
 )

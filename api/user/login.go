@@ -33,10 +33,12 @@ func (*LoginApi) GetUserMessage(c *gin.Context) {
 		response.FailWithDetailed(c, "用户登入失败", map[string]string{
 			"message": "用户：" + username + " 登入失败！",
 		})
+
 	} else if user.Username == username && user.Password == password {
-		response.SuccssWithDetailed(c, "用户登入成功", map[string]string{
-			"message": "用户：" + username + " 登入成功！",
+		response.LoginSuccessDetailed(c, "用户："+username+" 登入成功！", map[string]string{
+			"token": "123456",
 		})
+
 	} else {
 		response.FailWithDetailed(c, "用户登入失败", map[string]string{
 			"message": "用户：" + username + " 登入失败！",

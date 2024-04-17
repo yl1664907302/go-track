@@ -13,5 +13,5 @@ func (*ExampleRouter) InitExample(r *gin.Engine) {
 	group := r.Group("/example")
 	apiGroup := api.ApiGroupApp.ExampleApiGroup
 	//追加路径
-	group.GET("/ping", apiGroup.ExampleTest)
+	group.POST("/ping", apiGroup.ExampleTest)
 }

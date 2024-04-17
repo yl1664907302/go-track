@@ -10,7 +10,5 @@ func main() {
 	initiallize.Viper()
 	initiallize.InitMysqlDB()
 	r := initiallize.Router()
-	//读取k8s配置
-	initiallize.K8s()
 	panic(r.Run(global.CONF.System.Addr))
 }

@@ -1,4 +1,4 @@
-package example
+package wechat
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 	"net/http"
 )
 
-type ExampleApi struct {
+type WeChatApi struct {
 }
 
-func (*ExampleApi) ExampleTest(c *gin.Context) {
+func (*WeChatApi) GetWeChatMessage(c *gin.Context) {
 	body, err := c.GetRawData()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	success = iota
+	success = iota + 1
 	fail
 )
 
@@ -51,5 +51,30 @@ func FailWithDetailed(c *gin.Context, msg string, data any) {
 		"code": fail,
 		"msg":  msg,
 		"data": data,
+	})
+}
+
+func LoginSuccessDetailed(c *gin.Context, msg string, data any) {
+	c.JSON(http.StatusOK, gin.H{
+		"code": success,
+		"msg":  msg,
+		"data": data,
+	})
+}
+
+func InfoSuccessDetailed(c *gin.Context, msg string, data any) {
+	c.JSON(http.StatusOK, gin.H{
+		"code": success,
+		"msg":  msg,
+		"data": data,
+	})
+}
+
+func GomessageSuccessDetailed(c *gin.Context, msg string, data any) {
+	c.JSON(http.StatusOK, gin.H{
+		"code":   success,
+		"msg":    msg,
+		"result": data,
+		"error":  "null",
 	})
 }

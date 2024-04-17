@@ -1,5 +1,5 @@
-package k8s
+package feishu
 
 type ApiGroup struct {
-	PodApi
+	FeishuApi
 }

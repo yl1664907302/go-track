@@ -11,4 +11,5 @@ type LoginRouter struct {
 func (*LoginRouter) Login(r *gin.Engine) {
 	apiGroup := api.ApiGroupApp.LoginApiGroup
 	r.POST("login", apiGroup.GetUserMessage)
+	r.GET("info", apiGroup.GetUserInfo)
 }
