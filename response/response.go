@@ -26,7 +26,7 @@ func SuccssWithMessage(c *gin.Context, msg string) {
 
 func SuccssWithDetailed(c *gin.Context, msg string, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"code": success,
+		"code": 20000,
 		"msg":  msg,
 		"data": data,
 	})

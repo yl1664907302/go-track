@@ -1,4 +1,7 @@
 export default {
+  'menu.platform.wechat_robot':'企业微信',
+  'menu.platform.feishu': '飞书',
+  'menu.platform.dingtalk': '钉钉',
   'menu.dashboard.workplace': '工作台',
   'workplace.welcome': '欢迎回来！',
   'workplace.balance': '余额（元）',

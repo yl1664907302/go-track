@@ -6,6 +6,7 @@ import localeWorkplace from '@/views/dashboard/workplace/locale/zh-CN';
 import localeSettings from './zh-CN/settings';
 
 export default {
+  'menu.platform':'告警消息平台',
   'menu.dashboard': '仪表盘',
   'menu.server.dashboard': '仪表盘-服务端',
   'menu.server.workplace': '工作台-服务端',
