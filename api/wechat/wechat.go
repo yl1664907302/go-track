@@ -9,7 +9,7 @@ import (
 type WeChatApi struct {
 }
 
-func (*WeChatApi) GetWeChatMessage(c *gin.Context) {
+func (*WeChatApi) PostWeChatMessage(c *gin.Context) {
 	body, err := c.GetRawData()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -11,5 +11,6 @@ type WeChat_RobotRouter struct {
 func (*WeChat_RobotRouter) InitWeChat_RobotRouter(r *gin.Engine) {
 	group := r.Group("/wechat_robot")
 	Wechat_robotApigroup := api.ApiGroupApp.Wechat_robotApiGroup
-	group.POST("/message", Wechat_robotApigroup.GetWeChat_RobotMessage)
+	group.POST("/message", Wechat_robotApigroup.PostWeChat_RobotMessage)
+	group.GET("getmessage", Wechat_robotApigroup.GetWeChat_RobotMessagebyFenye)
 }

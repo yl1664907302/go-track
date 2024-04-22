@@ -12,7 +12,7 @@ type Info struct {
 	Value string
 }
 
-func (*ActionMessage) ExtractInfo(markdownContent string) []Info {
+func (*ActionMessage) ExtractInfo(markdownContent string, keyword bool) ([]Info, string) {
 	var infoSlice []Info
 
 	lines := strings.Split(markdownContent, "\n")
@@ -32,6 +32,9 @@ func (*ActionMessage) ExtractInfo(markdownContent string) []Info {
 			}
 		}
 	}
+	if keyword == true {
+		return infoSlice, infoSlice[0].Value
+	}
 
-	return infoSlice
+	return infoSlice, ""
 }

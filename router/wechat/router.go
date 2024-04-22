@@ -11,5 +11,5 @@ type WeChatRouter struct {
 func (*WeChatRouter) InitWeChatRouter(r *gin.Engine) {
 	group := r.Group("/wechat")
 	WechatApigroup := api.ApiGroupApp.WechatApiGroup
-	group.POST("/message", WechatApigroup.GetWeChatMessage)
+	group.POST("/message", WechatApigroup.PostWeChatMessage)
 }
