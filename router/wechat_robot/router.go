@@ -13,4 +13,5 @@ func (*WeChat_RobotRouter) InitWeChat_RobotRouter(r *gin.Engine) {
 	Wechat_robotApigroup := api.ApiGroupApp.Wechat_robotApiGroup
 	group.POST("/message", Wechat_robotApigroup.PostWeChat_RobotMessage)
 	group.GET("getmessage", Wechat_robotApigroup.GetWeChat_RobotMessagebyFenye)
+	group.GET("getmessagemohu", Wechat_robotApigroup.GetWeChat_RobotMessagebyMohu)
 }

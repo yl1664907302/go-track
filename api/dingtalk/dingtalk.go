@@ -41,3 +41,17 @@ func (*DingTalkApi) GetDingTalkMessagebyFenye(c *gin.Context) {
 	}
 	response.SuccssWithDetailed(c, "分页查询索引成功", messages)
 }
+
+func (*DingTalkApi) GetDingTalkMessagebyMohu(c *gin.Context) {
+	var fenye pojo.Fenye
+	fenye.Index = c.Query("index")
+	fenye.From = c.Query("from")
+	fenye.Size = c.Query("size")
+	fenye.SortField = c.Query("sort_field")
+	fenye.Asc = c.Query("asc")
+	messages, err := elastic.SelectEsDocByIndex2keyword(&fenye, c.Query("groupname"), c.Query("time"), c.Query("keyword1"))
+	if err != nil {
+		log.Println(err)
+	}
+	response.SuccssWithDetailed(c, "模糊查询索引成功", messages)
+}

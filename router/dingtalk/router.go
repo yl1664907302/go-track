@@ -13,4 +13,5 @@ func (*DingTalkRouter) InitDingTalkRouter(r *gin.Engine) {
 	dingTalkApigroup := api.ApiGroupApp.DingtalkApiGroup
 	group.POST("/message", dingTalkApigroup.PostDingTalkMessage)
 	group.GET("getmessage", dingTalkApigroup.GetDingTalkMessagebyFenye)
+	group.GET("getmessagemohu", dingTalkApigroup.GetDingTalkMessagebyMohu)
 }

@@ -49,36 +49,51 @@ func CreateIndexES(message *pojo.Message, index string) error {
 	return err
 }
 
-func SelectEsDocByIndex2Keyword(index string, keyword string) error {
+func SelectEsDocByIndex2keyword(fenye *pojo.Fenye, groupname string, time string, keyword1 string) ([]pojo.Message, error) {
+	var messages []pojo.Message
 	ESclient, err := GetEsClient(
 		global.CONF.System.Elasticsearch.Eshost,
 		global.CONF.System.Elasticsearch.Esport,
 		global.CONF.System.Elasticsearch.Username,
 		global.CONF.System.Elasticsearch.Password)
 	if err != nil {
-		return err
+		return messages, err
 	}
 
 	// 构建模糊查询
-	query := elastic.NewWildcardQuery("contests.linename.keyword", "*"+keyword+"*") // 这里使用通配符查询，匹配包含 "192.168.35.14" 字符串的文档
 
+	query := elastic.NewBoolQuery().
+		Must(elastic.NewWildcardQuery("groupname.keyword", "*"+groupname+"*")).
+		Must(elastic.NewWildcardQuery("time.keyword", "*"+time+"*")).
+		Must(elastic.NewWildcardQuery("contests.linecontext.keyword", "*"+keyword1+"*"))
+	//转换参数类型
+	asc, _ := strconv.ParseBool(fenye.Asc)
+	from, _ := strconv.Atoi(fenye.From)
+	size, _ := strconv.Atoi(fenye.Size)
 	// 执行查询
 	searchResult, err := ESclient.Search().
-		Index(index). // 指定索引名称
-		Query(query). // 设置查询
+		Index(fenye.Index). // 指定索引名称
+		Query(query).       // 设置查询
+		From(from).
+		Size(size).
+		Sort(fenye.SortField, asc). // 排序字段和顺序
 		Do(context.Background())
 	if err != nil {
-		return err
+		return messages, err
 	}
 
-	// 打印查询结果
-	fmt.Printf("Total hits: %d\n", searchResult.TotalHits())
 	for _, hit := range searchResult.Hits.Hits {
+		var message pojo.Message
+		err := json.Unmarshal(hit.Source, &message)
+		if err != nil {
+			return messages, err
+		}
 		//fmt.Printf("Document ID: %s\n", hit.Id)
-		fmt.Printf("%s\n", hit.Source)
-		fmt.Println()
+		//fmt.Printf("%s\n", hit.Source)
+		//fmt.Println()
+		messages = append(messages, message)
 	}
-	return err
+	return messages, err
 }
 
 // 分页查询函数

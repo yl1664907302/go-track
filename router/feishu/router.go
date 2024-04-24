@@ -13,4 +13,5 @@ func (*FeishuRouter) InitFeishuRouter(r *gin.Engine) {
 	FeishuApigroup := api.ApiGroupApp.FeishuApiGroup
 	group.POST("/message", FeishuApigroup.PostFeishuMessage)
 	group.GET("getmessage", FeishuApigroup.GetFeishuMessagebyFenye)
+	group.GET("getmessagemohu", FeishuApigroup.GetFeishuMessagebyMohu)
 }

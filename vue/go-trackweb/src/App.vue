@@ -1,6 +1,6 @@
 <template>
   <a-config-provider :locale="locale">
-    <router-view />
+    <router-view :key="$route.fullPath"/>
     <global-setting />
   </a-config-provider>
 </template>
