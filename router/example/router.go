@@ -9,9 +9,6 @@ type ExampleRouter struct {
 }
 
 func (*ExampleRouter) InitExample(r *gin.Engine) {
-	//首次默认路径
-	group := r.Group("/example")
 	apiGroup := api.ApiGroupApp.ExampleApiGroup
-	//追加路径
-	group.POST("/ping", apiGroup.ExampleTest)
+	r.GET("/test", apiGroup.ExampleTest)
 }
