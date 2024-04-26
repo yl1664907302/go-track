@@ -1,9 +1,9 @@
 package mysqldatabase
 
 import (
+	"go-track/global"
+	"go-track/pojo"
 	"gorm.io/gorm"
-	"kube-auto/global"
-	"kube-auto/pojo"
 	"log"
 )
 

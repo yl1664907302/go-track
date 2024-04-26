@@ -1,6 +1,6 @@
 package service
 
-import "kube-auto/database/service/servicelmpl"
+import "go-track/database/service/servicelmpl"
 
 var (
 	UserServiceImpl *servicelmpl.UserServiceImpl

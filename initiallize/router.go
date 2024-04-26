@@ -2,8 +2,8 @@ package initiallize
 
 import (
 	"github.com/gin-gonic/gin"
-	"kube-auto/middleware"
-	"kube-auto/router"
+	"go-track/middleware"
+	"go-track/router"
 )
 
 func Router() *gin.Engine {

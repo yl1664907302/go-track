@@ -1,12 +1,12 @@
 package api
 
 import (
-	"kube-auto/api/dingtalk"
-	"kube-auto/api/example"
-	"kube-auto/api/feishu"
-	"kube-auto/api/user"
-	"kube-auto/api/wechat"
-	"kube-auto/api/wechat_robot"
+	"go-track/api/dingtalk"
+	"go-track/api/example"
+	"go-track/api/feishu"
+	"go-track/api/user"
+	"go-track/api/wechat"
+	"go-track/api/wechat_robot"
 )
 
 type ApiGroup struct {

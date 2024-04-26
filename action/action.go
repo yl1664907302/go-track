@@ -1,8 +1,8 @@
 package action
 
 import (
-	"kube-auto/global"
-	"kube-auto/pojo"
+	"go-track/global"
+	"go-track/pojo"
 	"time"
 )
 

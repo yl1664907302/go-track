@@ -2,7 +2,7 @@ package example
 
 import (
 	"github.com/gin-gonic/gin"
-	"kube-auto/response"
+	"go-track/response"
 )
 
 type ExampleApi struct {

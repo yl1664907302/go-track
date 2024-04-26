@@ -1,9 +1,9 @@
 package global
 
 import (
+	"go-track/config"
+	"go-track/utils"
 	"gorm.io/gorm"
-	"kube-auto/config"
-	"kube-auto/utils"
 )
 
 var (

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"kube-auto/global"
-	"kube-auto/initiallize"
+	"go-track/global"
+	"go-track/initiallize"
 )
 
 func main() {

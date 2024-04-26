@@ -2,13 +2,14 @@ package initiallize
 
 import (
 	"fmt"
+	"go-track/database/dao"
+	"go-track/database/dao/mysqldatabase"
+	"go-track/database/service"
+	"go-track/database/service/servicelmpl"
+	"go-track/global"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"kube-auto/database/dao"
-	"kube-auto/database/dao/mysqldatabase"
-	"kube-auto/database/service"
-	"kube-auto/database/service/servicelmpl"
-	"kube-auto/global"
+
 	"log"
 )
 

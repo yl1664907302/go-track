@@ -1,8 +1,8 @@
 package servicelmpl
 
 import (
-	"kube-auto/database/dao"
-	"kube-auto/pojo"
+	"go-track/database/dao"
+	"go-track/pojo"
 )
 
 type UserServiceImpl struct {

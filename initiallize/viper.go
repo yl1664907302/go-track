@@ -2,7 +2,7 @@ package initiallize
 
 import (
 	"github.com/spf13/viper"
-	"kube-auto/global"
+	"go-track/global"
 	"log"
 )
 

@@ -2,7 +2,7 @@ package wechat_robot
 
 import (
 	"github.com/gin-gonic/gin"
-	"kube-auto/api"
+	"go-track/api"
 )
 
 type WeChat_RobotRouter struct {

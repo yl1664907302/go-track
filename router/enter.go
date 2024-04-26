@@ -1,12 +1,12 @@
 package router
 
 import (
-	"kube-auto/router/dingtalk"
-	"kube-auto/router/example"
-	"kube-auto/router/feishu"
-	"kube-auto/router/user"
-	"kube-auto/router/wechat"
-	"kube-auto/router/wechat_robot"
+	"go-track/router/dingtalk"
+	"go-track/router/example"
+	"go-track/router/feishu"
+	"go-track/router/user"
+	"go-track/router/wechat"
+	"go-track/router/wechat_robot"
 )
 
 type RouterGroup struct {

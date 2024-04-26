@@ -1,6 +1,6 @@
 package dao
 
-import "kube-auto/database/dao/mysqldatabase"
+import "go-track/database/dao/mysqldatabase"
 
 var (
 	UserDAO *mysqldatabase.MysqlUserDAO

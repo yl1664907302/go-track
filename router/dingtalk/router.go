@@ -2,7 +2,7 @@ package dingtalk
 
 import (
 	"github.com/gin-gonic/gin"
-	"kube-auto/api"
+	"go-track/api"
 )
 
 type DingTalkRouter struct {

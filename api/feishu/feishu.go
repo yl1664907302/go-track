@@ -2,10 +2,11 @@ package feishu
 
 import (
 	"github.com/gin-gonic/gin"
-	"kube-auto/action"
-	"kube-auto/elastic"
-	"kube-auto/pojo"
-	"kube-auto/response"
+	"go-track/action"
+	"go-track/elastic"
+	"go-track/pojo"
+	"go-track/response"
+
 	"log"
 	"net/http"
 )

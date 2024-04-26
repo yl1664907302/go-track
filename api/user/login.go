@@ -2,9 +2,9 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"kube-auto/database/service"
-	"kube-auto/pojo"
-	"kube-auto/response"
+	"go-track/database/service"
+	"go-track/pojo"
+	"go-track/response"
 	"log"
 	"net/http"
 )
