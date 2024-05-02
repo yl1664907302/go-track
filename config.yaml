@@ -1,5 +1,5 @@
 system:
-  addr: ":80"
+  addr: ":8080"
   database:
     mysqlhost: "localhost"
     mysqlport: "3306"
