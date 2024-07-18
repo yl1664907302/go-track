@@ -22,5 +22,7 @@ func Router() *gin.Engine {
 	g6.InitWeChat_RobotRouter(r)
 	g7 := router.RouterGroupApp.WechatWeChatGroup
 	g7.InitWeChatRouter(r)
+	g8 := router.RouterGroupApp.AlertMangerRouterGroup
+	g8.InitAlertMangerRouter(r)
 	return r
 }

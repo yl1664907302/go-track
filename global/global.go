@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	CONF             config.Server
+	CONF             *config.Server
 	MysqlDataConnect *gorm.DB
-	ActionMessage    utils.ActionMessage
+	ActionMessage    *utils.ActionMessage
 )

@@ -3,7 +3,7 @@ package dingtalk
 import (
 	"github.com/gin-gonic/gin"
 	"go-track/action"
-	"go-track/elastic"
+	"go-track/elastics"
 	"go-track/pojo"
 	"go-track/response"
 	"log"
@@ -22,9 +22,16 @@ func (*DingTalkApi) PostDingTalkMessage(c *gin.Context) {
 		return
 	}
 	message := action.DingTalkTransForm(dingtalk)
-	err = elastic.CreateIndexES(&message, index)
+	err, resp := elastics.CreateIndexES(&message, index)
 	if err != nil {
 		log.Print(err)
+		response.FailWithDetailed(c, "dingtalk消息失败存入es", map[string]string{
+			"code": err.Error(),
+		})
+	} else {
+		response.SuccssWithDetailed(c, "dingtalk消息成功存入es", map[string]string{
+			"code": resp,
+		})
 	}
 }
 
@@ -35,7 +42,7 @@ func (*DingTalkApi) GetDingTalkMessagebyFenye(c *gin.Context) {
 	fenye.Size = c.Query("size")
 	fenye.SortField = c.Query("sort_field")
 	fenye.Asc = c.Query("asc")
-	messages, err := elastic.PaginateSearchEsDoc(&fenye)
+	messages, err := elastics.PaginateSearchEsDoc(&fenye)
 	if err != nil {
 		log.Println(err)
 	}
@@ -49,7 +56,7 @@ func (*DingTalkApi) GetDingTalkMessagebyMohu(c *gin.Context) {
 	fenye.Size = c.Query("size")
 	fenye.SortField = c.Query("sort_field")
 	fenye.Asc = c.Query("asc")
-	messages, err := elastic.SelectEsDocByIndex2keyword(&fenye, c.Query("groupname"), c.Query("time"), c.Query("keyword1"))
+	messages, err := elastics.SelectEsDocByIndex2keyword(&fenye, c.Query("groupname"), c.Query("time"), c.Query("keyword1"))
 	if err != nil {
 		log.Println(err)
 	}

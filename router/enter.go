@@ -1,6 +1,7 @@
 package router
 
 import (
+	"go-track/router/alertmanger"
 	"go-track/router/dingtalk"
 	"go-track/router/example"
 	"go-track/router/feishu"
@@ -16,6 +17,7 @@ type RouterGroup struct {
 	FeishuFeishuGroup             feishu.FeishuRouter
 	WechatWeChatGroup             wechat.WeChatRouter
 	Wechat_robotWeChat_RobotGroup wechat_robot.WeChat_RobotRouter
+	AlertMangerRouterGroup        alertmanger.AlertMangerRouter
 }
 
 var RouterGroupApp = new(RouterGroup)

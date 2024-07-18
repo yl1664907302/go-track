@@ -1,6 +1,7 @@
 package api
 
 import (
+	"go-track/api/alertmanger"
 	"go-track/api/dingtalk"
 	"go-track/api/example"
 	"go-track/api/feishu"
@@ -16,6 +17,7 @@ type ApiGroup struct {
 	FeishuApiGroup       feishu.ApiGroup
 	WechatApiGroup       wechat.ApiGroup
 	Wechat_robotApiGroup wechat_robot.ApiGroup
+	AlertmangerApiGroup  alertmanger.ApiGroup
 }
 
 var ApiGroupApp = new(ApiGroup)

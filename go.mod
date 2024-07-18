@@ -4,14 +4,18 @@ go 1.21
 
 require (
 	github.com/gin-gonic/gin v1.9.1
-	github.com/olivere/elastic/v7 v7.0.32
 	github.com/spf13/viper v1.18.2
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/gorm v1.25.9
 )
 
 require (
-	github.com/bytedance/sonic v1.9.1 // indirect
+	github.com/olivere/elastic/v7 v7.0.32
+	github.com/wanghuiyt/ding v0.0.2
+)
+
+require (
+	github.com/bytedance/sonic v1.9.1
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
@@ -55,6 +59,5 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
