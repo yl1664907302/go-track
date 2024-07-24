@@ -2,7 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ele/vue-element-plus-admin" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/react/go-track-web" vcs="Git" />
   </component>
 </project>
