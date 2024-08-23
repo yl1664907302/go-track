@@ -18,4 +18,5 @@ func (*AlertMangerRouter) InitAlertMangerRouter(r *gin.Engine) {
 	group.GET("/origin", alertmangerApigroup.GetAlertMangerMessage)
 	group.GET("/newmarkdown", alertmangerApigroup.GetMarkDownMessage)
 	group.GET("/robot", alertmangerApigroup.GetRobot)
+	group.GET("/delrobot/dingtalk", alertmangerApigroup.GetDelRobot)
 }

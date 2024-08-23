@@ -201,3 +201,18 @@ func (*AlertMangerApi) GetRobot(c *gin.Context) {
 		response.SuccssWithDetailed(c, "robot实例获取成功", robot)
 	}
 }
+
+// 删除告警机器人
+func (*AlertMangerApi) GetDelRobot(c *gin.Context) {
+	var fenye pojo.Fenye
+	fenye.Index = c.Query("index")
+	err := elastics.DelIndexForDingTalkRobot(fenye.Index)
+	if err != nil {
+		log.Print(err)
+		response.FailWithDetailed(c, "robot删除失败", map[string]string{
+			"code": err.Error(),
+		})
+	} else {
+		response.SuccssWithDetailed(c, "robot删除成功", "")
+	}
+}

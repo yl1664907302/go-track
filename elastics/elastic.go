@@ -335,3 +335,16 @@ func CreateIndexForDingTalkRobot(robot *pojo.Robot, index string) (error, string
 	_, err = ESclient.Index().Index(index + "_r").BodyString(string(marshaler)).Do(context.Background())
 	return err, ""
 }
+
+func DelIndexForDingTalkRobot(index string) error {
+	ESclient, err := GetEsClient()
+	ctx := context.Background()
+	if err != nil {
+		log.Println(err)
+	}
+	deleteIndex, err := ESclient.DeleteIndex(index + "_r").Do(ctx)
+	if deleteIndex.Acknowledged {
+		log.Printf("已删除索引: %s", index)
+	}
+	return err
+}
