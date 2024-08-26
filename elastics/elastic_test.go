@@ -1,6 +1,7 @@
 package elastics
 
 import (
+	"fmt"
 	"github.com/olivere/elastic/v7"
 	"go-track/global"
 	"log"
@@ -20,4 +21,12 @@ func TestA(t *testing.T) {
 		// 设置info日志输出
 		elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)))
 	log.Println(err)
+}
+
+func TestB(t *testing.T) {
+	some, err := SelectDocidBySome("r1_1", "robot_id", "1")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(some)
 }

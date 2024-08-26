@@ -78,12 +78,50 @@ func CreateIndexForMarkDown(message *pojo.Desc, index string) (error, string) {
 		log.Println(err)
 	}
 	log.Println(string(marshaler))
+	_, err = SelectMarkdownTemp(index)
+	if err != nil {
+		return err, ""
+	}
 	_, err = ESclient.Index().Index(index + "_t").BodyString(string(marshaler)).Do(context.Background())
 
 	if err == nil {
 		log.Print("markdown模板成功写入索引" + ":" + index + "_t")
 	}
 	return err, message.Markdown
+}
+
+func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string) {
+	marshaler, err := json.Marshal(message)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(string(marshaler))
+	doc_id, err := SelectDocidBySome(index+"_t", "maketime", message.Desc.Maketime)
+	if err != nil {
+		return err, ""
+	}
+	if doc_id == "" {
+		return fmt.Errorf("模板不存在无法更新"), ""
+	} else {
+		err := UpdateDoc(index, doc_id, message.Desc)
+		if err != nil {
+			return err, ""
+		}
+	}
+	return err, message.Desc.Markdown
+}
+
+func SelectMarkdownTemp(index string) (string, error) {
+	ESclient, err := GetEsClient()
+	if err != nil {
+		return "", err
+	}
+	do, err := ESclient.Search().Index(index + "_t").Do(context.Background())
+	//一个接收者只容许保留一个模板
+	if do.Hits.TotalHits.Value > 0 {
+		return string(do.Hits.TotalHits.Value), fmt.Errorf("模板已存在无法新增")
+	}
+	return "", err
 }
 
 func CreateIndexES(message interface{}, index string) (error, string) {
@@ -267,6 +305,7 @@ func SearchMarkDown(index string) (bool, *pojo.Desc, error) {
 		return false, nil, err
 	}
 
+	//目前只获取最新的模板
 	var desc pojo.Desc
 	for _, hit := range searchResult.Hits.Hits {
 		err := sonic.Unmarshal(hit.Source, &desc)
@@ -323,7 +362,7 @@ func CreateIndexForNewMarkDown(newmarkdown *pojo.Newmarkdown, index string) (err
 	return err, ""
 }
 
-func CreateIndexForDingTalkRobot(robot *pojo.Robot, index string) (error, string) {
+func CreateIndexForRobot(robot *pojo.Robot, index string) (error, string) {
 	ESclient, err := GetEsClient()
 	if err != nil {
 		log.Println(err)
@@ -336,15 +375,85 @@ func CreateIndexForDingTalkRobot(robot *pojo.Robot, index string) (error, string
 	return err, ""
 }
 
-func DelIndexForDingTalkRobot(index string) error {
+func DelIndex(index string) error {
 	ESclient, err := GetEsClient()
 	ctx := context.Background()
 	if err != nil {
 		log.Println(err)
 	}
-	deleteIndex, err := ESclient.DeleteIndex(index + "_r").Do(ctx)
+	deleteIndex, err := ESclient.DeleteIndex(index).Do(ctx)
 	if deleteIndex.Acknowledged {
 		log.Printf("已删除索引: %s", index)
 	}
 	return err
+}
+
+func DelDocByKey(index string, key string, value string) error {
+	//查询是否存在该文档
+	doc_id, err := SelectDocidBySome(index, key, value)
+	if doc_id == "" {
+		log.Printf("索引%s中不存在%s值为%s的doc", index, key, value)
+		return fmt.Errorf("索引%s中不存在%s值为%s的doc", index, key, value)
+	} else {
+		err := DelDoc(index, doc_id)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func DelDoc(index string, doc_id string) error {
+	ESclient, err := GetEsClient()
+	if err != nil {
+		log.Println(err)
+	}
+	do, err := ESclient.Delete().Index(index).Id(doc_id).Do(context.Background())
+	if do != nil {
+		log.Printf("doc%s删除成功", do.Id)
+	}
+	return err
+}
+
+func UpdateDoc(index string, doc_id string, any interface{}) error {
+	ESclient, err := GetEsClient()
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = ESclient.Update().Index(index).Id(doc_id).Doc(any).Do(context.Background())
+	return err
+}
+
+func UpdateDocForRobot(index string, robot pojo.Robot) error {
+	doc_id, err := SelectDocidBySome(index, "robot_id", robot.Robot_id)
+	if doc_id == "" {
+		log.Printf("索引%s中不存在%s值为%s的doc", index, "robot_id", robot.Robot_id)
+		return fmt.Errorf("索引%s中不存在%s值为%s的doc", index, "robot_id", robot.Robot_id)
+	} else {
+		err = UpdateDoc(index, doc_id, robot)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func SelectDocidBySome(index string, key string, value string) (string, error) {
+	var doc_id string
+	ESclient, err := GetEsClient()
+	if err != nil {
+		log.Println(err)
+	}
+	//创建复合查询
+	boolquery := elastic.NewBoolQuery()
+	boolquery.Must(elastic.NewTermsQuery(key, value))
+
+	do, err := ESclient.Search(index).Query(boolquery).Do(context.Background())
+	for _, hit := range do.Hits.Hits {
+		if hit == nil {
+			return "", err
+		}
+		doc_id = hit.Id
+	}
+	return doc_id, err
 }

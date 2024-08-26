@@ -67,7 +67,7 @@ func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
 	}
 }
 
-// 负责接收前端发送过来的Markdown模板
+// 负责接收前端发送过来的Markdown模板（目前只能存储一份模板）
 func (*AlertMangerApi) PostMarkDownTemplate(c *gin.Context) {
 	body, err := c.GetRawData()
 	var markdown pojo.Markdown
@@ -114,7 +114,7 @@ func (*AlertMangerApi) GetAlertMangerMessage(c *gin.Context) {
 	}
 }
 
-// 负责获取alertmanger去重排序过滤后的告警消息
+// 负责获取alertmanger去重排序过滤后的MarkDown告警消息
 func (*AlertMangerApi) GetMarkDownMessage(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index")
@@ -130,6 +130,28 @@ func (*AlertMangerApi) GetMarkDownMessage(c *gin.Context) {
 		})
 	} else {
 		response.SuccssWithDetailed(c, "去重排序查询markdown实例索引成功", markdowns)
+	}
+}
+
+func (*AlertMangerApi) PostUpdateMarkDownMessage(c *gin.Context) {
+	body, err := c.GetRawData()
+	var markdown pojo.Markdown
+	err = sonic.Unmarshal(body, &markdown)
+	if err != nil {
+		log.Print(err)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err, _ = elastics.UpdateIndexForMarkDown(&markdown, markdown.Receiver)
+	if err != nil {
+		log.Print(err)
+		response.FailWithDetailed(c, "更新markdown模板失败", map[string]string{
+			"code": err.Error(),
+		})
+	} else {
+		response.SuccssWithDetailed(c, "更新markdown模板成功", markdown)
 	}
 }
 
@@ -158,8 +180,10 @@ func (*AlertMangerApi) PostTestAlertMangerMessage(c *gin.Context) {
 	}
 }
 
-// 接收钉钉机器人设置
-func (*AlertMangerApi) PostDingTalkRobotConf(c *gin.Context) {
+// **********************robot配置********************************
+
+// 新增钉钉机器人
+func (*AlertMangerApi) PostRobotConf(c *gin.Context) {
 	body, err := c.GetRawData()
 	var robot pojo.Robot
 	err = sonic.Unmarshal(body, &robot)
@@ -170,7 +194,7 @@ func (*AlertMangerApi) PostDingTalkRobotConf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err, _ = elastics.CreateIndexForDingTalkRobot(&robot, robot.Receiver)
+	err, _ = elastics.CreateIndexForRobot(&robot, robot.Receiver)
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "Robot失败存入es", map[string]string{
@@ -183,7 +207,7 @@ func (*AlertMangerApi) PostDingTalkRobotConf(c *gin.Context) {
 	}
 }
 
-// 负责获取Robot
+// 查询Robot
 func (*AlertMangerApi) GetRobot(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index")
@@ -206,7 +230,8 @@ func (*AlertMangerApi) GetRobot(c *gin.Context) {
 func (*AlertMangerApi) GetDelRobot(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index")
-	err := elastics.DelIndexForDingTalkRobot(fenye.Index)
+	doc_id := c.Query("robot_id")
+	err := elastics.DelDocByKey(fenye.Index+"_r", "robot_id", doc_id)
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "robot删除失败", map[string]string{
@@ -214,5 +239,30 @@ func (*AlertMangerApi) GetDelRobot(c *gin.Context) {
 		})
 	} else {
 		response.SuccssWithDetailed(c, "robot删除成功", "")
+	}
+}
+
+// 更新告警机器人
+func (*AlertMangerApi) PostUpdateRobot(c *gin.Context) {
+	body, err := c.GetRawData()
+	var robot pojo.Robot
+	err = sonic.Unmarshal(body, &robot)
+	if err != nil {
+		log.Print(err)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = elastics.UpdateDocForRobot(robot.Receiver+"_r", robot)
+	if err != nil {
+		log.Print(err)
+		response.FailWithDetailed(c, "Robot更新失败", map[string]string{
+			"code": err.Error(),
+		})
+	} else {
+		response.SuccssWithDetailed(c, "Robot更新成功", map[string]string{
+			"code": "200",
+		})
 	}
 }
