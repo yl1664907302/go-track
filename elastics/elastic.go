@@ -78,8 +78,8 @@ func CreateIndexForMarkDown(message *pojo.Desc, index string) (error, string) {
 		log.Println(err)
 	}
 	log.Println(string(marshaler))
-	_, err = SelectMarkdownTemp(index)
-	if err != nil {
+	num, err := SelectMarkdownTemp(index)
+	if err != nil && num != 1 {
 		return err, ""
 	}
 	_, err = ESclient.Index().Index(index + "_t").BodyString(string(marshaler)).Do(context.Background())
@@ -96,14 +96,14 @@ func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string
 		log.Println(err)
 	}
 	log.Println(string(marshaler))
-	doc_id, err := SelectDocidBySome(index+"_t", "maketime", message.Desc.Maketime)
+	doc_id, err := SelectDocidByNew(index + "_t")
 	if err != nil {
 		return err, ""
 	}
 	if doc_id == "" {
 		return fmt.Errorf("模板不存在无法更新"), ""
 	} else {
-		err := UpdateDoc(index, doc_id, message.Desc)
+		err := UpdateDoc(index+"_t", doc_id, message.Desc)
 		if err != nil {
 			return err, ""
 		}
@@ -111,17 +111,22 @@ func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string
 	return err, message.Desc.Markdown
 }
 
-func SelectMarkdownTemp(index string) (string, error) {
+func SelectMarkdownTemp(index string) (int, error) {
 	ESclient, err := GetEsClient()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	do, err := ESclient.Search().Index(index + "_t").Do(context.Background())
-	//一个接收者只容许保留一个模板
-	if do.Hits.TotalHits.Value > 0 {
-		return string(do.Hits.TotalHits.Value), fmt.Errorf("模板已存在无法新增")
+	do, err := ESclient.IndexExists(index + "_t").Do(context.Background())
+	if !do {
+		return 1, fmt.Errorf("索引%s不存在", index)
+	} else {
+		do, _ := ESclient.Count(index + "_t").Do(context.Background())
+		//一个接收者只容许保留一个模板
+		if int(do) != 0 {
+			return 0, fmt.Errorf("模板已存在无法新增")
+		}
+		return 0, nil
 	}
-	return "", err
 }
 
 func CreateIndexES(message interface{}, index string) (error, string) {
@@ -449,7 +454,33 @@ func SelectDocidBySome(index string, key string, value string) (string, error) {
 	boolquery.Must(elastic.NewTermsQuery(key, value))
 
 	do, err := ESclient.Search(index).Query(boolquery).Do(context.Background())
+	fmt.Println(do.Hits.TotalHits)
 	for _, hit := range do.Hits.Hits {
+		if hit == nil {
+			return "", err
+		}
+		doc_id = hit.Id
+	}
+	return doc_id, err
+}
+
+func SelectDocidByNew(index string) (string, error) {
+	var doc_id string
+	ESclient, err := GetEsClient()
+	if err != nil {
+		return "", err
+	}
+	searchResult, err := ESclient.Search().
+		Index(index).                    // 设置索引名称
+		Sort("maketime.keyword", false). // 根据时间戳字段排序，false表示降序
+		Size(1).                         // 只获取一条记录
+		Do(context.Background())         // 执行查询
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println(searchResult.Hits.TotalHits)
+	for _, hit := range searchResult.Hits.Hits {
 		if hit == nil {
 			return "", err
 		}

@@ -133,7 +133,7 @@ func (*AlertMangerApi) GetMarkDownMessage(c *gin.Context) {
 	}
 }
 
-func (*AlertMangerApi) PostUpdateMarkDownMessage(c *gin.Context) {
+func (*AlertMangerApi) PostUpdateMarkDownTemplate(c *gin.Context) {
 	body, err := c.GetRawData()
 	var markdown pojo.Markdown
 	err = sonic.Unmarshal(body, &markdown)
