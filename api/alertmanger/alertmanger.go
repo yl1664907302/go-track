@@ -95,6 +95,20 @@ func (*AlertMangerApi) PostMarkDownTemplate(c *gin.Context) {
 	}
 }
 
+func (*AlertMangerApi) GetNewMarkDownTemplate(c *gin.Context) {
+	var fenye pojo.Fenye
+	fenye.Index = c.Query("index")
+	err, markdown := elastics.SelectNewMarkdownTempByIndex(fenye.Index)
+	if err != nil {
+		log.Print(err)
+		response.FailWithDetailed(c, "获取最新模板失败", map[string]string{
+			"code": err.Error(),
+		})
+	} else {
+		response.SuccssWithDetailed(c, "获取最新模板成功", markdown)
+	}
+}
+
 // 负责获取alertmanger去重排序过滤后的告警消息
 func (*AlertMangerApi) GetAlertMangerMessage(c *gin.Context) {
 	var fenye pojo.Fenye

@@ -78,7 +78,7 @@ func CreateIndexForMarkDown(message *pojo.Desc, index string) (error, string) {
 		log.Println(err)
 	}
 	log.Println(string(marshaler))
-	num, err := SelectMarkdownTemp(index)
+	num, err := JudgeMarkdownTemp(index)
 	if err != nil && num != 1 {
 		return err, ""
 	}
@@ -96,7 +96,7 @@ func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string
 		log.Println(err)
 	}
 	log.Println(string(marshaler))
-	doc_id, err := SelectDocidByNew(index + "_t")
+	doc_id, err := SelectNewDocidByindex(index+"_t", "maketime.keyword")
 	if err != nil {
 		return err, ""
 	}
@@ -111,7 +111,18 @@ func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string
 	return err, message.Desc.Markdown
 }
 
-func SelectMarkdownTemp(index string) (int, error) {
+func SelectNewMarkdownTempByIndex(index string) (error, *pojo.Markdown) {
+	var markdown pojo.Markdown
+	byindex, err := SelectNewDocByindex(index+"_t", "maketime.keyword", pojo.Markdown{})
+	if err != nil {
+		return err, nil
+	}
+	message := byindex.(json.RawMessage)
+	err = sonic.Unmarshal(message, &markdown.Desc)
+	return err, &markdown
+}
+
+func JudgeMarkdownTemp(index string) (int, error) {
 	ESclient, err := GetEsClient()
 	if err != nil {
 		return 0, err
@@ -464,17 +475,17 @@ func SelectDocidBySome(index string, key string, value string) (string, error) {
 	return doc_id, err
 }
 
-func SelectDocidByNew(index string) (string, error) {
+func SelectNewDocidByindex(index string, key string) (string, error) {
 	var doc_id string
 	ESclient, err := GetEsClient()
 	if err != nil {
 		return "", err
 	}
 	searchResult, err := ESclient.Search().
-		Index(index).                    // 设置索引名称
-		Sort("maketime.keyword", false). // 根据时间戳字段排序，false表示降序
-		Size(1).                         // 只获取一条记录
-		Do(context.Background())         // 执行查询
+		Index(index).            // 设置索引名称
+		Sort(key, false).        // 根据时间戳字段排序，false表示降序
+		Size(1).                 // 只获取一条记录
+		Do(context.Background()) // 执行查询
 	if err != nil {
 		return "", err
 	}
@@ -487,4 +498,26 @@ func SelectDocidByNew(index string) (string, error) {
 		doc_id = hit.Id
 	}
 	return doc_id, err
+}
+func SelectNewDocByindex(index string, key string, any interface{}) (interface{}, error) {
+	ESclient, err := GetEsClient()
+	if err != nil {
+		return nil, err
+	}
+	searchResult, err := ESclient.Search().
+		Index(index).            // 设置索引名称
+		Sort(key, false).        // 根据时间戳字段排序，false表示降序
+		Size(1).                 // 只获取一条记录
+		Do(context.Background()) // 执行查询
+	if err != nil {
+		return nil, err
+	}
+
+	for _, hit := range searchResult.Hits.Hits {
+		if hit == nil {
+			return nil, err
+		}
+		any = hit.Source
+	}
+	return any, err
 }
