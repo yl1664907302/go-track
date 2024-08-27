@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/olivere/elastic/v7"
-	"go-track/global"
 	"go-track/pojo"
 	"log"
 	"os"
@@ -15,12 +14,23 @@ import (
 
 func GetEsClient() (*elastic.Client, error) {
 	// 创建 Elasticsearch 客户端
-	url := fmt.Sprintf("http://%s:%s", global.CONF.System.Elasticsearch.Eshost, global.CONF.System.Elasticsearch.Esport)
+	//url := fmt.Sprintf("http://%s:%s", global.CONF.System.Elasticsearch.Eshost, global.CONF.System.Elasticsearch.Esport)
+	//client, err := elastic.NewClient(
+	//	//elastics 服务地址
+	//	elastic.SetURL(url),
+	//	elastic.SetSniff(false),
+	//	elastic.SetBasicAuth(global.CONF.System.Elasticsearch.Username, global.CONF.System.Elasticsearch.Password),
+	//	// 设置错误日志输出
+	//	elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC ", log.LstdFlags)),
+	//	// 设置info日志输出
+	//	elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)))
+	//return client, err
+	url := fmt.Sprintf("http://%s:%s", "eshost.natapp1.cc", "80")
 	client, err := elastic.NewClient(
 		//elastics 服务地址
 		elastic.SetURL(url),
 		elastic.SetSniff(false),
-		elastic.SetBasicAuth(global.CONF.System.Elasticsearch.Username, global.CONF.System.Elasticsearch.Password),
+		elastic.SetBasicAuth("elastic", "123456"),
 		// 设置错误日志输出
 		elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC ", log.LstdFlags)),
 		// 设置info日志输出
@@ -40,11 +50,11 @@ func CreateIndexESForAlert(message []pojo.Alerts, index string) (error, string) 
 			log.Println(err)
 		}
 		log.Println(string(marshaler))
-		_, err = ESclient.Index().Index(index).BodyString(string(marshaler)).Do(context.Background())
-	}
-	if err == nil {
-		log.Print("消息成功写入索引" + ":" + index)
-		return err, "消息成功写入索引" + ":" + index
+		result, err := ESclient.Index().Index(index).BodyString(string(marshaler)).Do(context.Background())
+		if err != nil {
+			return err, "消息失败写入索引" + ":" + index
+		}
+		return nil, "消息成功写入索引" + ":" + index + ",doc_id为：" + result.Id
 	}
 	return err, ""
 }
@@ -113,12 +123,11 @@ func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string
 
 func SelectNewMarkdownTempByIndex(index string) (error, *pojo.Markdown) {
 	var markdown pojo.Markdown
-	byindex, err := SelectNewDocByindex(index+"_t", "maketime.keyword", pojo.Markdown{})
+	docRaw, err := SelectNewDocByindex(index+"_t", "maketime.keyword", pojo.Markdown{})
 	if err != nil {
 		return err, nil
 	}
-	message := byindex.(json.RawMessage)
-	err = sonic.Unmarshal(message, &markdown.Desc)
+	err = sonic.Unmarshal(docRaw, &markdown.Desc)
 	return err, &markdown
 }
 
@@ -391,18 +400,18 @@ func CreateIndexForRobot(robot *pojo.Robot, index string) (error, string) {
 	return err, ""
 }
 
-func DelIndex(index string) error {
-	ESclient, err := GetEsClient()
-	ctx := context.Background()
-	if err != nil {
-		log.Println(err)
-	}
-	deleteIndex, err := ESclient.DeleteIndex(index).Do(ctx)
-	if deleteIndex.Acknowledged {
-		log.Printf("已删除索引: %s", index)
-	}
-	return err
-}
+//func DelIndex(index string) error {
+//	ESclient, err := GetEsClient()
+//	ctx := context.Background()
+//	if err != nil {
+//		log.Println(err)
+//	}
+//	deleteIndex, err := ESclient.DeleteIndex(index).Do(ctx)
+//	if deleteIndex.Acknowledged {
+//		log.Printf("已删除索引: %s", index)
+//	}
+//	return err
+//}
 
 func DelDocByKey(index string, key string, value string) error {
 	//查询是否存在该文档
@@ -465,7 +474,6 @@ func SelectDocidBySome(index string, key string, value string) (string, error) {
 	boolquery.Must(elastic.NewTermsQuery(key, value))
 
 	do, err := ESclient.Search(index).Query(boolquery).Do(context.Background())
-	fmt.Println(do.Hits.TotalHits)
 	for _, hit := range do.Hits.Hits {
 		if hit == nil {
 			return "", err
@@ -499,7 +507,7 @@ func SelectNewDocidByindex(index string, key string) (string, error) {
 	}
 	return doc_id, err
 }
-func SelectNewDocByindex(index string, key string, any interface{}) (interface{}, error) {
+func SelectNewDocByindex(index string, key string, any interface{}) (json.RawMessage, error) {
 	ESclient, err := GetEsClient()
 	if err != nil {
 		return nil, err
@@ -519,5 +527,5 @@ func SelectNewDocByindex(index string, key string, any interface{}) (interface{}
 		}
 		any = hit.Source
 	}
-	return any, err
+	return any.(json.RawMessage), err
 }
