@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/react/go-track-web" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/vue/vue-vben-admin" vcs="Git" />
   </component>
 </project>

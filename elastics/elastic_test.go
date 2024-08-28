@@ -97,3 +97,29 @@ func TestSelectNewDocByindex(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateIndexESForAlert(t *testing.T) {
+	type args struct {
+		message []pojo.Alerts
+		index   string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  error
+		want1 string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := CreateIndexESForAlert(tt.args.message, tt.args.index)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CreateIndexESForAlert() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("CreateIndexESForAlert() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

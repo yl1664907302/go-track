@@ -3,6 +3,7 @@ package alertmanger
 import (
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
+	"go-track/database/mysql"
 	"go-track/elastics"
 	"go-track/going"
 	"go-track/pojo"
@@ -63,6 +64,11 @@ func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
 			log.Println(err)
 		} else {
 			log.Println("markdown实例已成功写入索引：" + index + "_n")
+		}
+		//receiver存入mysql
+		err = mysql.InsertReceiver(alert.Receiver)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }
