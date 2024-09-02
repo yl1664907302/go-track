@@ -51,6 +51,12 @@ func (*ActionMessage) EditFisrtCharToLower(s string) string {
 	return string(runes)
 }
 
+func (*ActionMessage) TranferSingleToDouble(s string) string {
+	//''转""
+	replace := strings.Replace(s, "'", "\"", -1)
+	return replace
+}
+
 func (*ActionMessage) InsertJsonToMarkdown(desc *pojo.Desc, alert *pojo.Alerts) (string, error) {
 	tmpl, err := template.New("markdown").Parse(desc.Markdown)
 	if err != nil {

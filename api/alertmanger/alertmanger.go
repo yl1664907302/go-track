@@ -43,7 +43,7 @@ func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
 	found, desc, err := elastics.SearchMarkDown(index + "_t")
 	if found {
 		log.Println("索引:" + index + "存在模板")
-		log.Println("模板为:" + desc.Markdown)
+		log.Println("模板为:\n" + desc.Markdown)
 		log.Println("模板创建时间为:" + desc.Maketime)
 
 	} else {
@@ -87,6 +87,7 @@ func (*AlertMangerApi) PostMarkDownTemplate(c *gin.Context) {
 	}
 	//获取index（首字母大写转小写）
 	index := utils.ActionMessages.EditFisrtCharToLower(markdown.Receiver)
+	markdown.Desc.Markdown = utils.ActionMessages.TranferSingleToDouble(markdown.Desc.Markdown)
 	markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
 	err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, index)
 	if err != nil {
@@ -164,6 +165,7 @@ func (*AlertMangerApi) PostUpdateMarkDownTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	markdown.Desc.Markdown = utils.ActionMessages.TranferSingleToDouble(markdown.Desc.Markdown)
 	err, _ = elastics.UpdateIndexForMarkDown(&markdown, markdown.Receiver)
 	if err != nil {
 		log.Print(err)

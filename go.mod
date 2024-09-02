@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/blinkbean/dingtalk v1.1.3
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/wanghuiyt/ding v0.0.2
 )
@@ -22,7 +23,6 @@ require (
 
 require (
 	github.com/bytedance/sonic v1.12.1
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

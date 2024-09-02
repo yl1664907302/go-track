@@ -16,9 +16,9 @@ func (*AlertMangerRouter) InitAlertMangerRouter(r *gin.Engine) {
 	group.POST("/post/test", alertmangerApigroup.PostTestAlertMangerMessage)
 
 	//markdown模板
-	group.POST("/post/newmarkdown", alertmangerApigroup.PostMarkDownTemplate)
-	group.POST("/post/updatemarkdown", alertmangerApigroup.PostUpdateMarkDownTemplate)
-	group.GET("/newmarkdown", alertmangerApigroup.GetNewMarkDownTemplate)
+	group.POST("/post/newmarkdowntemplate", alertmangerApigroup.PostMarkDownTemplate)
+	group.POST("/post/updatemarkdowntemplate", alertmangerApigroup.PostUpdateMarkDownTemplate)
+	group.GET("/newmarkdowntemplate", alertmangerApigroup.GetNewMarkDownTemplate)
 
 	//查询告警消息
 	group.GET("/origin", alertmangerApigroup.GetAlertMangerMessage)
