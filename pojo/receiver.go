@@ -1,6 +1,6 @@
 package pojo
 
 type Receiver struct {
-	Id            int    `json:"id"`
+	Niname        string `json:"niname"`
 	Receiver_name string `json:"receiver_name"`
 }

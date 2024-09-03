@@ -4,7 +4,7 @@ system:
     mysqlhost: "localhost"
     mysqlport: "3306"
     mysqluser: "root"
-    mysqlpassword: "root"
+    mysqlpassword: "166490"
     mysqldatabasename: "kube"
   elasticsearch:
     eshost: "eshost.natapp1.cc"

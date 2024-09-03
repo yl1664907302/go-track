@@ -23,12 +23,12 @@ func DelIndex(index string) error {
 	return err
 }
 
-func DelDocByKey(index string, key string, value string) error {
+func DelDocByKey(index string, key string, value int) error {
 	//查询是否存在该文档
 	doc_id, err := SelectDocidBySome(index, key, value)
 	if doc_id == "" {
-		log.Printf("索引%s中不存在%s值为%s的doc", index, key, value)
-		return fmt.Errorf("索引%s中不存在%s值为%s的doc", index, key, value)
+		log.Printf("索引%s中不存在%s值为%d的doc", index, key, value)
+		return fmt.Errorf("索引%s中不存在%s值为%d的doc", index, key, value)
 	} else {
 		err := DelDoc(index, doc_id)
 		if err != nil {
@@ -90,10 +90,10 @@ func SelectNewDocByindex(index string, key string, any interface{}) (json.RawMes
 		return nil, err
 	}
 	searchResult, err := ESclient.Search().
-		Index(index).            // 设置索引名称
-		Sort(key, false).        // 根据时间戳字段排序，false表示降序
-		Size(1).                 // 只获取一条记录
-		Do(context.Background()) // 执行查询
+		Index(index).                // 设置索引名称
+		Sort(key+".keyword", false). // 根据时间戳字段排序，false表示降序
+		Size(1).                     // 只获取一条记录
+		Do(context.Background())     // 执行查询
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func SelectNewDocByindex(index string, key string, any interface{}) (json.RawMes
 	}
 	return any.(json.RawMessage), err
 }
-func SelectDocidBySome(index string, key string, value string) (string, error) {
+func SelectDocidBySome(index string, key string, value int) (string, error) {
 	var doc_id string
 	ESclient, err := GetEsClient()
 	if err != nil {

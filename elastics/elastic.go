@@ -123,7 +123,7 @@ func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string
 
 func SelectNewMarkdownTempByIndex(index string) (error, *pojo.Markdown) {
 	var markdown pojo.Markdown
-	docRaw, err := SelectNewDocByindex(index+"_t", "maketime.keyword", pojo.Markdown{})
+	docRaw, err := SelectNewDocByindex(index+"_t", "maketime", pojo.Markdown{})
 	if err != nil {
 		return err, nil
 	}
@@ -147,6 +147,18 @@ func JudgeMarkdownTemp(index string) (int, error) {
 		}
 		return 0, nil
 	}
+}
+
+func JudgeIndex(index string) (int, error) {
+	ESclient, err := GetEsClient()
+	if err != nil {
+		return 0, err
+	}
+	do, err := ESclient.IndexExists(index).Do(context.Background())
+	if !do {
+		return 0, fmt.Errorf("索引%s不存在", index)
+	}
+	return 1, err
 }
 
 func CreateIndexES(message interface{}, index string) (error, string) {
@@ -403,8 +415,8 @@ func CreateIndexForRobot(robot *pojo.Robot, index string) (error, string) {
 func UpdateDocForRobot(index string, robot pojo.Robot) error {
 	doc_id, err := SelectDocidBySome(index, "robot_id", robot.Robot_id)
 	if doc_id == "" {
-		log.Printf("索引%s中不存在%s值为%s的doc", index, "robot_id", robot.Robot_id)
-		return fmt.Errorf("索引%s中不存在%s值为%s的doc", index, "robot_id", robot.Robot_id)
+		log.Printf("索引%s中不存在%s值为%d的doc", index, "robot_id", robot.Robot_id)
+		return fmt.Errorf("索引%s中不存在%s值为%d的doc", index, "robot_id", robot.Robot_id)
 	} else {
 		err = UpdateDoc(index, doc_id, robot)
 		if err != nil {

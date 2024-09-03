@@ -11,10 +11,87 @@ import (
 	"go-track/utils"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type AlertMangerApi struct{}
+
+// 分步表单接受api
+func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
+	body, err := c.GetRawData()
+	var step pojo.Stepform
+	var robot pojo.Robot
+	var robot2 pojo.Robot
+	var markdown pojo.Markdown
+
+	err = sonic.Unmarshal(body, &step)
+	if err != nil {
+		log.Print(err)
+	}
+	if err != nil {
+		response.FailWithDetailed(c, "json数据解析错误："+"\""+err.Error()+"\""+"!", map[string]int{
+			"code": http.StatusInternalServerError,
+		})
+	}
+	//获取index（首字母大写转小写）
+	receiver := utils.ActionMessages.EditFisrtCharToLower(step.Receiver)
+
+	//验证消息是否存在在于es
+	key, err := elastics.JudgeIndex(receiver)
+	if err != nil {
+		log.Println(err)
+	}
+	if key == 0 {
+		response.FailWithDetailed(c, "消息来源"+"\""+receiver+"\""+"不存在!", map[string]int{
+			"code": http.StatusInternalServerError,
+		})
+	}
+
+	//receiver存入mysql
+	err = mysql.InsertReceiver(receiver, step.Niname)
+	if err != nil {
+		response.FailWithDetailed(c, "数据库异常："+err.Error(), map[string]int{
+			"code": http.StatusInternalServerError,
+		})
+	} else { //添加robot
+		if step.Robot_ok {
+			robot.Receiver = receiver
+			robot.Robot_class = step.Robot_class
+			robot.Secret = step.Secret
+			robot.Switch = step.Switch
+			robot.Accesstoken = step.Accesstoken
+			byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
+			err = sonic.Unmarshal(byindex, &robot2)
+			robot.Robot_id = robot2.Robot_id + 1
+			err, _ = elastics.CreateIndexForRobot(&robot, robot.Receiver)
+			if err != nil {
+				log.Print(err)
+				response.FailWithDetailed(c, "Robot保存失败", map[string]int{
+					"code": http.StatusInternalServerError,
+				})
+			}
+		} else {
+			//添加markdown模板
+			if step.Markdown_ok {
+				markdown.Desc = step.Desc
+				markdown.Receiver = receiver
+				markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
+				err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, receiver)
+				if err != nil {
+					log.Print(err)
+					response.FailWithDetailed(c, "markdown模板保存失败", map[string]int{
+						"code": http.StatusInternalServerError,
+					})
+				}
+			} else {
+				response.SuccssWithDetailed(c, "成功创建告警通道"+step.Niname, map[string]int{
+					"code": http.StatusOK,
+				})
+			}
+		}
+	}
+}
 
 // 负责接收alertmanger的告警消息，并存储es
 func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
@@ -64,11 +141,6 @@ func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
 			log.Println(err)
 		} else {
 			log.Println("markdown实例已成功写入索引：" + index + "_n")
-		}
-		//receiver存入mysql
-		err = mysql.InsertReceiver(alert.Receiver)
-		if err != nil {
-			log.Println(err)
 		}
 	}
 }
@@ -208,6 +280,7 @@ func (*AlertMangerApi) PostTestAlertMangerMessage(c *gin.Context) {
 func (*AlertMangerApi) PostRobotConf(c *gin.Context) {
 	body, err := c.GetRawData()
 	var robot pojo.Robot
+	var robot2 pojo.Robot
 	err = sonic.Unmarshal(body, &robot)
 	if err != nil {
 		log.Print(err)
@@ -216,15 +289,25 @@ func (*AlertMangerApi) PostRobotConf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
+	err = sonic.Unmarshal(byindex, &robot2)
+	if err != nil {
+		response.FailWithDetailed(c, "Robot失败存入es", map[string]int{
+			"code": http.StatusInternalServerError,
+		})
+	}
+
+	//复制最新的id
+	robot.Robot_id = robot2.Robot_id + 1
 	err, _ = elastics.CreateIndexForRobot(&robot, robot.Receiver)
 	if err != nil {
 		log.Print(err)
-		response.FailWithDetailed(c, "Robot失败存入es", map[string]string{
-			"code": err.Error(),
+		response.FailWithDetailed(c, "Robot失败存入es", map[string]int{
+			"code": http.StatusInternalServerError,
 		})
 	} else {
-		response.SuccssWithDetailed(c, "Robot成功存入es", map[string]string{
-			"code": "200",
+		response.SuccssWithDetailed(c, "Robot成功存入es", map[string]int{
+			"code": http.StatusOK,
 		})
 	}
 }
@@ -253,7 +336,8 @@ func (*AlertMangerApi) GetDelRobot(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index")
 	doc_id := c.Query("robot_id")
-	err := elastics.DelDocByKey(fenye.Index+"_r", "robot_id", doc_id)
+	atoi, _ := strconv.Atoi(doc_id)
+	err := elastics.DelDocByKey(fenye.Index+"_r", "robot_id", atoi)
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "robot删除失败", map[string]string{
