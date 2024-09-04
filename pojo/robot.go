@@ -1,7 +1,7 @@
 package pojo
 
 type Robot struct {
-	Robot_name  string `json:"Robot_name"`
+	Robot_name  string `json:"robot_name"`
 	Receiver    string `json:"receiver"`
 	Robot_class string `json:"robot_class"`
 	Robot_id    int    `json:"robot_id"`
