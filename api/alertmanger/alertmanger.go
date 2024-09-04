@@ -61,6 +61,7 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 			robot.Secret = step.Secret
 			robot.Switch = step.Switch
 			robot.Accesstoken = step.Accesstoken
+			robot.Robot_name = step.Robot_name
 			byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
 			err = sonic.Unmarshal(byindex, &robot2)
 			robot.Robot_id = robot2.Robot_id + 1
@@ -70,24 +71,24 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 				response.FailWithDetailed(c, "Robot保存失败", map[string]int{
 					"code": http.StatusInternalServerError,
 				})
-			}
-		} else {
-			//添加markdown模板
-			if step.Markdown_ok {
-				markdown.Desc = step.Desc
-				markdown.Receiver = receiver
-				markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
-				err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, receiver)
-				if err != nil {
-					log.Print(err)
-					response.FailWithDetailed(c, "markdown模板保存失败", map[string]int{
-						"code": http.StatusInternalServerError,
+			} else {
+				//添加markdown模板
+				if step.Markdown_ok {
+					markdown.Desc.Markdown = step.Markdown
+					markdown.Receiver = receiver
+					markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
+					err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, receiver)
+					if err != nil {
+						log.Print(err)
+						response.FailWithDetailed(c, "markdown模板保存失败", map[string]int{
+							"code": http.StatusInternalServerError,
+						})
+					}
+				} else {
+					response.SuccssWithDetailed(c, "成功创建告警通道"+step.Niname, map[string]int{
+						"code": http.StatusOK,
 					})
 				}
-			} else {
-				response.SuccssWithDetailed(c, "成功创建告警通道"+step.Niname, map[string]int{
-					"code": http.StatusOK,
-				})
 			}
 		}
 	}
@@ -248,6 +249,22 @@ func (*AlertMangerApi) PostUpdateMarkDownTemplate(c *gin.Context) {
 		response.SuccssWithDetailed(c, "更新markdown模板成功", markdown)
 	}
 }
+
+//func (*AlertMangerApi) GetDelMarkdownTemplate(c *gin.Context) {
+//	var fenye pojo.Fenye
+//	fenye.Index = c.Query("index")
+//	fenye.Index = c.Query("")
+//	elastics.DelDocByKey(fenye.Index, "", "")
+//	if err != nil {
+//		log.Print(err)
+//		response.FailWithDetailed(c, "去重排序查询markdown实例索引失败", map[string]string{
+//			"code": err.Error(),
+//		})
+//	} else {
+//		response.SuccssWithDetailed(c, "去重排序查询markdown实例索引成功", markdowns)
+//	}
+//
+//}
 
 // 测试手动发送消息到go-track
 func (*AlertMangerApi) PostTestAlertMangerMessage(c *gin.Context) {

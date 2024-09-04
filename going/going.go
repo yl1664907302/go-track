@@ -10,7 +10,7 @@ import (
 func RobotDingTalkGoing2(index string, markdown string) error {
 	robots, _ := elastics.SearchRobot(index)
 	for _, robot := range robots {
-		if robot.Robot_class == "dingtalk" && robot.Switch == "on" {
+		if robot.Robot_class == "dingtalk" && robot.Switch {
 			webhook := ding.Webhook{AccessToken: robot.Accesstoken, Secret: robot.Secret}
 			err := webhook.SendMessageText(markdown)
 			if err != nil {
@@ -25,7 +25,7 @@ func RobotDingTalkGoing2(index string, markdown string) error {
 func RobotDingTalkGoing(index string, markdown string) error {
 	robots, _ := elastics.SearchRobot(index)
 	for _, robot := range robots {
-		if robot.Robot_class == "dingtalk" && robot.Switch == "on" {
+		if robot.Robot_class == "dingtalk" && robot.Switch {
 			secret := dingtalk.InitDingTalkWithSecret(robot.Accesstoken, robot.Secret)
 			//webhook := ding.Webhook{AccessToken: robot.Accesstoken, Secret: robot.Secret}
 			//err := webhook.SendMessageText(markdown)
