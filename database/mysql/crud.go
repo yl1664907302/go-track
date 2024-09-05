@@ -5,10 +5,9 @@ import (
 	"go-track/pojo"
 )
 
-func SelectReceivers() ([]pojo.Receiver, error) {
-	var r []pojo.Receiver
-	err := global.MysqlDataConnect.Select("id,receiver_name").Find(&r).Error
-	return r, err
+func LoginUser(p *pojo.User) error {
+	err := global.MysqlDataConnect.Select("username,password").Find(&p).Error
+	return err
 }
 
 func InsertReceiver(receiver string, niname string) error {

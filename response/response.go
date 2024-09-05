@@ -5,76 +5,43 @@ import (
 	"net/http"
 )
 
-const (
-	success = iota + 1
-	fail
-)
-
-func Success(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": success,
-		"msg":  "成功",
-	})
-}
-
-func SuccssWithMessage(c *gin.Context, msg string) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": success,
-		"msg":  msg,
-	})
-}
-
 func SuccssWithDetailed(c *gin.Context, msg string, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"code": 20000,
-		"msg":  msg,
-		"data": data,
-	})
-}
-
-func Fail(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": fail,
-		"msg":  "成功",
-	})
-}
-
-func FailWithMessage(c *gin.Context, msg string) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": fail,
-		"msg":  msg,
+		"code":    http.StatusOK,
+		"message": msg,
+		"config":  data,
 	})
 }
 
 func FailWithDetailed(c *gin.Context, msg string, data any) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": fail,
-		"msg":  msg,
-		"data": data,
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"code":    http.StatusOK,
+		"message": msg,
+		"config":  data,
 	})
 }
 
 func LoginSuccessDetailed(c *gin.Context, msg string, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"code": success,
-		"msg":  msg,
-		"data": data,
+		"code":    http.StatusOK,
+		"message": msg,
+		"data":    data,
 	})
 }
 
 func InfoSuccessDetailed(c *gin.Context, msg string, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"code": success,
-		"msg":  msg,
-		"data": data,
+		"code":    http.StatusOK,
+		"message": msg,
+		"data":    data,
 	})
 }
 
 func GomessageSuccessDetailed(c *gin.Context, msg string, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"code":   success,
-		"msg":    msg,
-		"result": data,
-		"error":  "null",
+		"code":    http.StatusOK,
+		"message": msg,
+		"result":  data,
+		"error":   "null",
 	})
 }

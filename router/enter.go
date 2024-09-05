@@ -3,11 +3,12 @@ package router
 import (
 	"go-track/router/alertmanger"
 	"go-track/router/example"
+	"go-track/router/user"
 )
 
 type RouterGroup struct {
 	ExampleRouterGroup example.ExampleRouter
-	//UserLoginGroup     user.LoginRouter
+	UserLoginGroup     user.LoginRouter
 	//DingtalkRouterGroup           dingtalk.DingTalkRouter
 	//FeishuFeishuGroup             feishu.FeishuRouter
 	//WechatWeChatGroup             wechat.WeChatRouter

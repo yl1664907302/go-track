@@ -12,8 +12,8 @@ func Router() *gin.Engine {
 	r.Use(middleware.Cors)
 	g1 := router.RouterGroupApp.ExampleRouterGroup
 	g1.InitExample(r)
-	//g3 := router.RouterGroupApp.UserLoginGroup
-	//g3.Login(r)
+	g3 := router.RouterGroupApp.UserLoginGroup
+	g3.Login(r)
 	//g4 := router.RouterGroupApp.DingtalkRouterGroup
 	//g4.InitDingTalkRouter(r)
 	//g5 := router.RouterGroupApp.FeishuFeishuGroup

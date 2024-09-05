@@ -2,7 +2,7 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-track/database/service"
+	"go-track/database/mysql"
 	"go-track/pojo"
 	"go-track/response"
 	"log"
@@ -20,28 +20,18 @@ func (*LoginApi) GetUserMessage(c *gin.Context) {
 		return
 	}
 
-	// 表单数据已成功绑定到loginForm，现在可以访问和使用这些字段
-	username := loginForm.Username
-	password := loginForm.Password
-
-	user, err := service.UserServiceImpl.GetUserByNameAndPasswd(username, password)
+	err := mysql.LoginUser(&loginForm)
 	if err != nil {
 		log.Print(err)
-	}
-
-	if username == "" && password == "" {
-		response.FailWithDetailed(c, "用户登入失败", map[string]string{
-			"message": "用户：" + username + " 登入失败！",
-		})
-
-	} else if user.Username == username && user.Password == password {
-		response.LoginSuccessDetailed(c, "用户："+username+" 登入成功！", map[string]string{
-			"token": "123456",
+		response.FailWithDetailed(c, "用户登入失败", map[string]any{
+			"code": http.StatusInternalServerError,
 		})
 
 	} else {
-		response.FailWithDetailed(c, "用户登入失败", map[string]string{
-			"message": "用户：" + username + " 登入失败！",
+		response.LoginSuccessDetailed(c, "登入成功！", map[string]any{
+			"code":  http.StatusOK,
+			"token": "123456",
 		})
+
 	}
 }
