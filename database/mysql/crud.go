@@ -3,11 +3,15 @@ package mysql
 import (
 	"go-track/global"
 	"go-track/pojo"
+	"log"
 )
 
-func LoginUser(p *pojo.User) error {
-	err := global.MysqlDataConnect.Select("username,password").Find(&p).Error
-	return err
+func LoginUser(username string, password string) (pojo.User, error) {
+	var user pojo.User
+	//err := global.MysqlDataConnect.Select("username,password").Find(&p).Error
+	err := global.MysqlDataConnect.Where("username = ? AND password = ?", username, password).First(&user).Error
+	log.Println(user)
+	return user, err
 }
 
 func InsertReceiver(receiver string, niname string) error {

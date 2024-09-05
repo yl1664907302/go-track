@@ -23,9 +23,11 @@ func FailWithDetailed(c *gin.Context, msg string, data any) {
 
 func LoginSuccessDetailed(c *gin.Context, msg string, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"code":    http.StatusOK,
-		"message": msg,
-		"data":    data,
+		//"code":     http.StatusOK,
+		"message":  msg,
+		"userInfo": data,
+		"token":    "123456",
+		"tokenkey": "Authorization",
 	})
 }
 
