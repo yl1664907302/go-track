@@ -23,14 +23,13 @@ func (*LoginApi) GetUserMessage(c *gin.Context) {
 	user, err := mysql.LoginUser(loginForm.Username, loginForm.Password)
 	if err != nil {
 		log.Print(err)
-		response.FailWithDetailed(c, "用户登入失败", map[string]any{
+		response.LoginFailWithDetailed(c, "用户登入失败", map[string]any{
 			"code": http.StatusInternalServerError,
 		})
 
 	} else {
 		response.LoginSuccessDetailed(c, "登入成功！", map[string]any{
 			"username":    user.Username,
-			"password":    user.Password,
 			"role":        user.Role,
 			"roleId":      user.RoleId,
 			"permissions": user.Permissions,

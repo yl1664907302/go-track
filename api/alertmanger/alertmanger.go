@@ -30,9 +30,10 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 		log.Print(err)
 	}
 	if err != nil {
-		response.FailWithDetailed(c, "json数据解析错误："+"\""+err.Error()+"\""+"!", map[string]int{
+		response.FailWithDetailed(c, "消息来源不存在!", map[string]int{
 			"code": http.StatusInternalServerError,
 		})
+		return
 	}
 	//获取index（首字母大写转小写）
 	receiver := utils.ActionMessages.EditFisrtCharToLower(step.Receiver)
@@ -46,51 +47,56 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 		response.FailWithDetailed(c, "消息来源不存在!", map[string]int{
 			"code": http.StatusInternalServerError,
 		})
-	} else {
-		//receiver存入mysql
-		err = mysql.InsertReceiver(receiver, step.Niname)
+		return
+	}
+
+	//receiver存入mysql
+	err = mysql.InsertReceiver(receiver, step.Niname)
+	if err != nil {
+		response.FailWithDetailed(c, "数据库异常："+err.Error(), map[string]int{
+			"code": http.StatusInternalServerError,
+		})
+		return
+	}
+
+	//添加robot
+	if step.Robot_ok {
+		robot.Receiver = receiver
+		robot.Robot_class = step.Robot_class
+		robot.Secret = step.Secret
+		robot.Switch = step.Switch
+		robot.Accesstoken = step.Accesstoken
+		robot.Robot_name = step.Robot_name
+		byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
+		err = sonic.Unmarshal(byindex, &robot2)
+		robot.Robot_id = robot2.Robot_id + 1
+		err, _ = elastics.CreateIndexForRobot(&robot, robot.Receiver)
 		if err != nil {
-			response.FailWithDetailed(c, "数据库异常："+err.Error(), map[string]int{
+			log.Print(err)
+			response.FailWithDetailed(c, "Robot保存失败", map[string]int{
 				"code": http.StatusInternalServerError,
 			})
-		} else { //添加robot
-			if step.Robot_ok {
-				robot.Receiver = receiver
-				robot.Robot_class = step.Robot_class
-				robot.Secret = step.Secret
-				robot.Switch = step.Switch
-				robot.Accesstoken = step.Accesstoken
-				robot.Robot_name = step.Robot_name
-				byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
-				err = sonic.Unmarshal(byindex, &robot2)
-				robot.Robot_id = robot2.Robot_id + 1
-				err, _ = elastics.CreateIndexForRobot(&robot, robot.Receiver)
-				if err != nil {
-					log.Print(err)
-					response.FailWithDetailed(c, "Robot保存失败", map[string]int{
-						"code": http.StatusInternalServerError,
-					})
-				} else {
-					//添加markdown模板
-					if step.Markdown_ok {
-						markdown.Desc.Markdown = step.Markdown
-						markdown.Receiver = receiver
-						markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
-						err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, receiver)
-						if err != nil {
-							log.Print(err)
-							response.FailWithDetailed(c, "markdown模板保存失败", map[string]int{
-								"code": http.StatusInternalServerError,
-							})
-						}
-					} else {
-						response.SuccssWithDetailed(c, "成功创建告警通道"+step.Niname, map[string]int{
-							"code": http.StatusOK,
-						})
-					}
-				}
+			return
+		}
+
+		//添加markdown模板
+		if step.Markdown_ok {
+			markdown.Desc.Markdown = step.Markdown
+			markdown.Receiver = receiver
+			markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
+			err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, receiver)
+			if err != nil {
+				log.Print(err)
+				response.FailWithDetailed(c, "markdown模板保存失败", map[string]int{
+					"code": http.StatusInternalServerError,
+				})
+				return
 			}
 		}
+
+		response.SuccssWithDetailed(c, "成功创建告警通道"+step.Niname, map[string]int{
+			"code": http.StatusOK,
+		})
 	}
 }
 
