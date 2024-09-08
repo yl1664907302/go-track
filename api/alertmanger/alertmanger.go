@@ -30,8 +30,8 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 		log.Print(err)
 	}
 	if err != nil {
-		response.FailWithDetailed(c, "消息来源不存在!", map[string]int{
-			"code": http.StatusInternalServerError,
+		response.FailWithDetailed(c, "消息来源不存在!", map[string]any{
+			"message": "error",
 		})
 		return
 	}
@@ -44,8 +44,8 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 		log.Println(err)
 	}
 	if key == 0 {
-		response.FailWithDetailed(c, "消息来源不存在!", map[string]int{
-			"code": http.StatusInternalServerError,
+		response.FailWithDetailed(c, "消息来源不存在!", map[string]any{
+			"message": "error",
 		})
 		return
 	}
