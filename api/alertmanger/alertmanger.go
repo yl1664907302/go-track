@@ -17,6 +17,26 @@ import (
 
 type AlertMangerApi struct{}
 
+func (*AlertMangerApi) GetMarkDownrMessagebyStatus(c *gin.Context) {
+	var fenye pojo.Fenye
+	fenye.Index = c.Query("index") + "_n"
+	fenye.From = c.Query("from")
+	fenye.Size = c.Query("size")
+	fenye.SortField = c.Query("sort_field")
+	fenye.Asc = c.Query("asc")
+	fenye.Status = c.Query("status")
+	_, markdowns, err := elastics.SearchBySortAndUniqueAndByKey(&fenye, true, "status", fenye.Status)
+	if err != nil {
+		log.Print(err)
+		response.FailWithDetailed(c, "", map[string]any{
+			"status":  "error",
+			"message": "消息来源不存在",
+		})
+	} else {
+		response.SuccssWithDetailed(c, "", markdowns)
+	}
+}
+
 // 分步表单接受api
 func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 	body, err := c.GetRawData()
@@ -130,31 +150,30 @@ func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
 		log.Println(resp)
 	}
 	//判断是否存在模板
-	found, desc, err := elastics.SearchMarkDown(index + "_t")
+	found, desc, _ := elastics.SearchMarkDown(index + "_t")
 	if found {
 		log.Println("索引:" + index + "存在模板")
 		log.Println("模板为:\n" + desc.Markdown)
 		log.Println("模板创建时间为:" + desc.Maketime)
-
+		//执行函数将模板中的字段替换为json字段对应的值
+		for _, a := range alerts {
+			markdown, err := utils.ActionMessages.InsertJsonToMarkdown(desc, &a)
+			if err != nil {
+				log.Println(err)
+			}
+			//发送给钉钉
+			err = going.RobotDingTalkGoing(index, markdown)
+			//markdown实例存入es
+			newmarkdown := pojo.NewNewmarkdown(a.Status, a.Fingerprint, a.StartsAt, markdown)
+			err, _ = elastics.CreateIndexForNewMarkDown(newmarkdown, index)
+			if err != nil {
+				log.Println(err)
+			} else {
+				log.Println("markdown实例已成功写入索引：" + index + "_n")
+			}
+		}
 	} else {
 		log.Println("索引" + index + "不存在模板")
-	}
-	//执行函数将模板中的字段替换为json字段对应的值
-	for _, a := range alerts {
-		markdown, err := utils.ActionMessages.InsertJsonToMarkdown(desc, &a)
-		if err != nil {
-			log.Println(err)
-		}
-		//发送给钉钉
-		err = going.RobotDingTalkGoing(index, markdown)
-		//markdown实例存入es
-		newmarkdown := pojo.NewNewmarkdown(a.Status, a.Fingerprint, a.StartsAt, markdown)
-		err, _ = elastics.CreateIndexForNewMarkDown(newmarkdown, index)
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Println("markdown实例已成功写入索引：" + index + "_n")
-		}
 	}
 }
 
@@ -223,7 +242,7 @@ func (*AlertMangerApi) GetAlertMangerMessage(c *gin.Context) {
 // 负责获取alertmanger去重排序过滤后的MarkDown告警消息
 func (*AlertMangerApi) GetMarkDownMessage(c *gin.Context) {
 	var fenye pojo.Fenye
-	fenye.Index = c.Query("index")
+	fenye.Index = c.Query("index") + "_n"
 	fenye.From = c.Query("from")
 	fenye.Size = c.Query("size")
 	fenye.SortField = c.Query("sort_field")

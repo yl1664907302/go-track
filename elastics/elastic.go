@@ -254,6 +254,76 @@ func PaginateSearchEsDoc(fenye *pojo.Fenye) ([]pojo.Message, error) {
 	return messages, err
 }
 
+// 后期可以跟SearchBySortAndUnique合并
+func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 string, condition2_value string) ([]pojo.Alerts, []pojo.Newmarkdown, error) {
+	ESclient, err := GetEsClient()
+	if err != nil {
+		log.Println(err)
+	}
+
+	size, _ := strconv.Atoi(fenye.Size)
+	var zhiwen string
+	var shijian string
+	if key == false {
+		zhiwen = "fingerprint.keyword"
+		shijian = "startsAt"
+	} else {
+		zhiwen = "zhiwen.keyword"
+		shijian = "time"
+	}
+
+	// 配置聚合语句
+	aggs := elastic.NewTermsAggregation().Field(zhiwen).Size(1000).SubAggregation("latest_alert",
+		elastic.NewTopHitsAggregation().Sort(shijian, false).Size(1).FetchSourceContext(elastic.NewFetchSourceContext(true).Include("*")))
+	// 配合bool匹配
+	boolquery := elastic.NewBoolQuery()
+	boolquery.Must(elastic.NewTermQuery(condition2, condition2_value))
+	// 执行查询
+	searchResult, err := ESclient.Search().
+		Index(fenye.Index).
+		Size(size).Query(boolquery).
+		Aggregation("unique_alerts", aggs).
+		Do(context.Background())
+
+	if err != nil {
+		log.Printf("Error getting response: %s", err)
+		return nil, nil, err
+	}
+	if key == false {
+		var alerts []pojo.Alerts
+		agg, found := searchResult.Aggregations.Terms("unique_alerts")
+		if found {
+			for _, bucket := range agg.Buckets {
+				tophits, _ := bucket.TopHits("latest_alert")
+				for _, hit := range tophits.Hits.Hits {
+					var alert pojo.Alerts
+					err := sonic.UnmarshalString(string(hit.Source), &alert)
+					if err != nil {
+						log.Println(err)
+					}
+					alerts = append(alerts, alert)
+				}
+			}
+		}
+		return alerts, nil, err
+	}
+	var markdowns []pojo.Newmarkdown
+	agg, found := searchResult.Aggregations.Terms("unique_alerts")
+	if found {
+		for _, bucket := range agg.Buckets {
+			tophits, _ := bucket.TopHits("latest_alert")
+			for _, hit := range tophits.Hits.Hits {
+				var newmarkdown pojo.Newmarkdown
+				err := sonic.UnmarshalString(string(hit.Source), &newmarkdown)
+				if err != nil {
+					log.Println(err)
+				}
+				markdowns = append(markdowns, newmarkdown)
+			}
+		}
+	}
+	return nil, markdowns, err
+}
 func SearchBySortAndUnique(fenye *pojo.Fenye, key bool) ([]pojo.Alerts, []pojo.Newmarkdown, error) {
 	ESclient, err := GetEsClient()
 	if err != nil {
@@ -274,12 +344,14 @@ func SearchBySortAndUnique(fenye *pojo.Fenye, key bool) ([]pojo.Alerts, []pojo.N
 	// 配置聚合语句
 	aggs := elastic.NewTermsAggregation().Field(zhiwen).Size(1000).SubAggregation("latest_alert",
 		elastic.NewTopHitsAggregation().Sort(shijian, false).Size(1).FetchSourceContext(elastic.NewFetchSourceContext(true).Include("*")))
+
 	// 执行查询
 	searchResult, err := ESclient.Search().
 		Index(fenye.Index).
 		Size(size).
 		Aggregation("unique_alerts", aggs).
 		Do(context.Background())
+
 	if err != nil {
 		log.Printf("Error getting response: %s", err)
 		return nil, nil, err
@@ -333,12 +405,11 @@ func SearchMarkDown(index string) (bool, *pojo.Desc, error) {
 		Sort("maketime.keyword", false).
 		Do(context.Background())
 	if err != nil {
-		log.Printf("Error getting response: %s", err)
 		return false, nil, err
 	}
 
 	if searchResult.TotalHits() == 0 {
-		log.Println("No documents found")
+
 		return false, nil, err
 	}
 

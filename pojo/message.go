@@ -14,6 +14,7 @@ type Context struct {
 }
 
 type Fenye struct {
+	Status    string `json:"status"`
 	Index     string `json:"index"`
 	From      string `json:"from"`
 	Size      string `json:"size"`
