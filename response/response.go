@@ -7,18 +7,16 @@ import (
 
 func SuccssWithDetailed(c *gin.Context, msg string, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"code":    http.StatusOK, // 我看你又用了这个200的code
-		"message": msg,
-		"config":  data,
+		"code": 0,
+		"data": data,
 	})
 }
 
 func FailWithDetailed(c *gin.Context, msg string, data any) {
-	// 错误的时候要返回错误code和message
+	// 错误的时候要返回错误code
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0, // 没有这个 又用了0
-		"message": msg,
-		"data":    data,
+		"code": 0,
+		"data": data,
 	})
 }
 

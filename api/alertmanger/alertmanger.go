@@ -31,7 +31,8 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 	}
 	if err != nil {
 		response.FailWithDetailed(c, "消息来源不存在!", map[string]any{
-			"message": "error",
+			"status":  "error",
+			"message": "消息来源不存在",
 		})
 		return
 	}
@@ -45,7 +46,8 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 	}
 	if key == 0 {
 		response.FailWithDetailed(c, "消息来源不存在!", map[string]any{
-			"message": "error",
+			"status":  "error",
+			"message": "消息来源不存在",
 		})
 		return
 	}
@@ -53,8 +55,9 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 	//receiver存入mysql
 	err = mysql.InsertReceiver(receiver, step.Niname)
 	if err != nil {
-		response.FailWithDetailed(c, "数据库异常："+err.Error(), map[string]int{
-			"code": http.StatusInternalServerError,
+		response.FailWithDetailed(c, "数据库异常："+err.Error(), map[string]any{
+			"status":  "error",
+			"message": "数据库异常：" + err.Error(),
 		})
 		return
 	}
@@ -73,31 +76,34 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 		err, _ = elastics.CreateIndexForRobot(&robot, robot.Receiver)
 		if err != nil {
 			log.Print(err)
-			response.FailWithDetailed(c, "Robot保存失败", map[string]int{
-				"code": http.StatusInternalServerError,
+			response.FailWithDetailed(c, "Robot保存失败", map[string]any{
+				"status":  "error",
+				"message": "Robot保存失败",
 			})
 			return
 		}
-
-		//添加markdown模板
-		if step.Markdown_ok {
-			markdown.Desc.Markdown = step.Markdown
-			markdown.Receiver = receiver
-			markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
-			err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, receiver)
-			if err != nil {
-				log.Print(err)
-				response.FailWithDetailed(c, "markdown模板保存失败", map[string]int{
-					"code": http.StatusInternalServerError,
-				})
-				return
-			}
-		}
-
-		response.SuccssWithDetailed(c, "成功创建告警通道"+step.Niname, map[string]int{
-			"code": http.StatusOK,
-		})
 	}
+
+	//添加markdown模板
+	if step.Markdown_ok {
+		markdown.Desc.Markdown = step.Markdown
+		markdown.Receiver = receiver
+		markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
+		err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, receiver)
+		if err != nil {
+			log.Print(err)
+			response.FailWithDetailed(c, "markdown模板保存失败", map[string]any{
+				"status":  "error",
+				"message": "markdown模板保存失败",
+			})
+			return
+		}
+	}
+
+	response.SuccssWithDetailed(c, "成功创建告警通道"+step.Niname, map[string]any{
+		"status":  "success",
+		"message": "成功创建告警通道" + step.Niname,
+	})
 }
 
 // 负责接收alertmanger的告警消息，并存储es
@@ -142,7 +148,7 @@ func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
 		//发送给钉钉
 		err = going.RobotDingTalkGoing(index, markdown)
 		//markdown实例存入es
-		newmarkdown := pojo.NewNewmarkdown(a.Fingerprint, a.StartsAt, markdown)
+		newmarkdown := pojo.NewNewmarkdown(a.Status, a.Fingerprint, a.StartsAt, markdown)
 		err, _ = elastics.CreateIndexForNewMarkDown(newmarkdown, index)
 		if err != nil {
 			log.Println(err)
