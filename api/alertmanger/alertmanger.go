@@ -17,6 +17,10 @@ import (
 
 type AlertMangerApi struct{}
 
+func (*AlertMangerApi) DelReceiver(c *gin.Context) {
+
+}
+
 func (*AlertMangerApi) GetReceivers(c *gin.Context) {
 	receivers, err := mysql.SelectReceiver()
 	if err != nil {

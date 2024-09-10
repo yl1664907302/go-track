@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/olivere/elastic/v7"
+	"go-track/global"
 	"go-track/pojo"
 	"log"
 	"os"
@@ -14,28 +15,28 @@ import (
 
 func GetEsClient() (*elastic.Client, error) {
 	// 创建 Elasticsearch 客户端
-	//url := fmt.Sprintf("http://%s:%s", global.CONF.System.Elasticsearch.Eshost, global.CONF.System.Elasticsearch.Esport)
-	//client, err := elastic.NewClient(
-	//	//elastics 服务地址
-	//	elastic.SetURL(url),
-	//	elastic.SetSniff(false),
-	//	elastic.SetBasicAuth(global.CONF.System.Elasticsearch.Username, global.CONF.System.Elasticsearch.Password),
-	//	// 设置错误日志输出
-	//	elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC ", log.LstdFlags)),
-	//	// 设置info日志输出
-	//	elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)))
-	//return client, err
-	url := fmt.Sprintf("http://%s:%s", "eshost.natapp1.cc", "80")
+	url := fmt.Sprintf("http://%s:%s", global.CONF.System.Elasticsearch.Eshost, global.CONF.System.Elasticsearch.Esport)
 	client, err := elastic.NewClient(
 		//elastics 服务地址
 		elastic.SetURL(url),
 		elastic.SetSniff(false),
-		elastic.SetBasicAuth("elastic", "123456"),
+		elastic.SetBasicAuth(global.CONF.System.Elasticsearch.Username, global.CONF.System.Elasticsearch.Password),
 		// 设置错误日志输出
 		elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC ", log.LstdFlags)),
 		// 设置info日志输出
 		elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)))
 	return client, err
+	//url := fmt.Sprintf("http://%s:%s", "eshost.natapp1.cc", "80")
+	//client, err := elastic.NewClient(
+	//	//elastics 服务地址
+	//	elastic.SetURL(url),
+	//	elastic.SetSniff(false),
+	//	elastic.SetBasicAuth("elastic", "123456"),
+	//	// 设置错误日志输出
+	//	elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC ", log.LstdFlags)),
+	//	// 设置info日志输出
+	//	elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)))
+	//return client, err
 }
 
 func CreateIndexESForAlert(message []pojo.Alerts, index string) (error, string) {
