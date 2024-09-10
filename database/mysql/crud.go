@@ -21,3 +21,9 @@ func InsertReceiver(receiver string, niname string) error {
 	err := global.MysqlDataConnect.Create(&r).Error
 	return err
 }
+
+func SelectReceiver() ([]pojo.Receiver, error) {
+	var r []pojo.Receiver
+	err := global.MysqlDataConnect.Find(&r).Error
+	return r, err
+}

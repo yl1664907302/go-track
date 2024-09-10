@@ -255,13 +255,14 @@ func PaginateSearchEsDoc(fenye *pojo.Fenye) ([]pojo.Message, error) {
 }
 
 // 后期可以跟SearchBySortAndUnique合并
-func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 string, condition2_value string) ([]pojo.Alerts, []pojo.Newmarkdown, error) {
+func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 string, condition2_value string) ([]pojo.Alerts, []pojo.Newmarkdown, int, error) {
 	ESclient, err := GetEsClient()
 	if err != nil {
 		log.Println(err)
 	}
 
 	size, _ := strconv.Atoi(fenye.Size)
+	number := 0
 	var zhiwen string
 	var shijian string
 	if key == false {
@@ -287,7 +288,7 @@ func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 strin
 
 	if err != nil {
 		log.Printf("Error getting response: %s", err)
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
 	if key == false {
 		var alerts []pojo.Alerts
@@ -305,7 +306,7 @@ func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 strin
 				}
 			}
 		}
-		return alerts, nil, err
+		return alerts, nil, number, err
 	}
 	var markdowns []pojo.Newmarkdown
 	agg, found := searchResult.Aggregations.Terms("unique_alerts")
@@ -319,10 +320,11 @@ func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 strin
 					log.Println(err)
 				}
 				markdowns = append(markdowns, newmarkdown)
+				number++
 			}
 		}
 	}
-	return nil, markdowns, err
+	return nil, markdowns, number, err
 }
 func SearchBySortAndUnique(fenye *pojo.Fenye, key bool) ([]pojo.Alerts, []pojo.Newmarkdown, error) {
 	ESclient, err := GetEsClient()

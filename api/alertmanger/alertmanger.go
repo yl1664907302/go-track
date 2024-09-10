@@ -17,6 +17,19 @@ import (
 
 type AlertMangerApi struct{}
 
+func (*AlertMangerApi) GetReceivers(c *gin.Context) {
+	receivers, err := mysql.SelectReceiver()
+	if err != nil {
+		response.FailWithDetailed(c, "", map[string]any{
+			"status":  "error",
+			"message": "receiver查询失败",
+		})
+	} else {
+		response.SuccssWithDetailed(c, "", receivers)
+	}
+
+}
+
 func (*AlertMangerApi) GetMarkDownrMessagebyStatus(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index") + "_n"
@@ -25,7 +38,7 @@ func (*AlertMangerApi) GetMarkDownrMessagebyStatus(c *gin.Context) {
 	fenye.SortField = c.Query("sort_field")
 	fenye.Asc = c.Query("asc")
 	fenye.Status = c.Query("status")
-	_, markdowns, err := elastics.SearchBySortAndUniqueAndByKey(&fenye, true, "status", fenye.Status)
+	_, markdowns, number, err := elastics.SearchBySortAndUniqueAndByKey(&fenye, true, "status", fenye.Status)
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "", map[string]any{
@@ -33,7 +46,11 @@ func (*AlertMangerApi) GetMarkDownrMessagebyStatus(c *gin.Context) {
 			"message": "消息来源不存在",
 		})
 	} else {
-		response.SuccssWithDetailed(c, "", markdowns)
+		response.SuccssWithDetailed(c, "", map[string]any{
+			"status":    "success",
+			"number":    number,
+			"markdowns": markdowns,
+		})
 	}
 }
 

@@ -35,4 +35,6 @@ func (*AlertMangerRouter) InitAlertMangerRouter(r *gin.Engine) {
 	group.GET("/robot", alertmangerApigroup.GetRobot)
 	group.GET("/delrobot", alertmangerApigroup.GetDelRobot)
 
+	//查询Receiver信息
+	group.GET("/receivers", alertmangerApigroup.GetReceivers)
 }
