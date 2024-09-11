@@ -37,4 +37,7 @@ func (*AlertMangerRouter) InitAlertMangerRouter(r *gin.Engine) {
 
 	//查询Receiver信息
 	group.GET("/receivers", alertmangerApigroup.GetReceivers)
+
+	//删除索引
+	group.DELETE("/del/index", alertmangerApigroup.DelReceiver)
 }

@@ -18,7 +18,40 @@ import (
 type AlertMangerApi struct{}
 
 func (*AlertMangerApi) DelReceiver(c *gin.Context) {
+	var pagination pojo.Fenye
+	pagination.Index = c.Query("index")
+	//执行删除
+	indexSuffixes := []string{"", "_r", "_t", "_n"}
+	for _, suffix := range indexSuffixes {
+		//判断是否存在索引
+		index, _ := elastics.JudgeIndex(pagination.Index + suffix)
+		if index == 0 {
+			continue
+		}
+		err := elastics.DelIndex(pagination.Index + suffix)
+		if err != nil {
+			log.Println(err)
+			response.FailWithDetailed(c, "", map[string]any{
+				"status":  "error",
+				"message": "失败删除索引：" + pagination.Index + suffix,
+			})
+			return
+		}
 
+	}
+	err := mysql.DelReceiver(pagination.Index)
+	if err != nil {
+		log.Println(err)
+		response.FailWithDetailed(c, "", map[string]any{
+			"status":  "error",
+			"message": "失败删除receiver：" + pagination.Index,
+		})
+		return
+	}
+	response.SuccssWithDetailed(c, "", map[string]any{
+		"status":  "success",
+		"message": "删除成功",
+	})
 }
 
 func (*AlertMangerApi) GetReceivers(c *gin.Context) {
@@ -31,7 +64,6 @@ func (*AlertMangerApi) GetReceivers(c *gin.Context) {
 	} else {
 		response.SuccssWithDetailed(c, "", receivers)
 	}
-
 }
 
 func (*AlertMangerApi) GetMarkDownrMessagebyStatus(c *gin.Context) {
@@ -80,18 +112,18 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 	//获取index（首字母大写转小写）
 	receiver := utils.ActionMessages.EditFisrtCharToLower(step.Receiver)
 
-	//验证消息是否存在在于es
-	key, err := elastics.JudgeIndex(receiver)
-	if err != nil {
-		log.Println(err)
-	}
-	if key == 0 {
-		response.FailWithDetailed(c, "消息来源不存在!", map[string]any{
-			"status":  "error",
-			"message": "消息来源不存在",
-		})
-		return
-	}
+	////验证消息是否存在在于es
+	//key, err := elastics.JudgeIndex(receiver)
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//if key == 0 {
+	//	response.FailWithDetailed(c, "消息来源不存在!", map[string]any{
+	//		"status":  "error",
+	//		"message": "消息来源不存在",
+	//	})
+	//	return
+	//}
 
 	//receiver存入mysql
 	err = mysql.InsertReceiver(receiver, step.Niname)

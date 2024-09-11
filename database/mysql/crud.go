@@ -27,3 +27,9 @@ func SelectReceiver() ([]pojo.Receiver, error) {
 	err := global.MysqlDataConnect.Find(&r).Error
 	return r, err
 }
+
+func DelReceiver(receiver_name string) error {
+	var r pojo.Receiver
+	err := global.MysqlDataConnect.Where("receiver_name = ?", receiver_name).Delete(&r).Error
+	return err
+}
