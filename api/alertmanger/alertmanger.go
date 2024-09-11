@@ -217,7 +217,7 @@ func (*AlertMangerApi) PostAlertMangerMessage(c *gin.Context) {
 			//发送给钉钉
 			err = going.RobotDingTalkGoing(index, markdown)
 			//markdown实例存入es
-			newmarkdown := pojo.NewNewmarkdown(a.Status, a.Fingerprint, a.StartsAt, markdown)
+			newmarkdown := pojo.NewNewmarkdown(a.Status, a.Fingerprint, a.StartsAt, markdown, a.EndsAt)
 			err, _ = elastics.CreateIndexForNewMarkDown(newmarkdown, index)
 			if err != nil {
 				log.Println(err)
