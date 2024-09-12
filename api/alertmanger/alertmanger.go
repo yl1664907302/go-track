@@ -66,7 +66,22 @@ func (*AlertMangerApi) GetReceivers(c *gin.Context) {
 	}
 }
 
-func (*AlertMangerApi) GetMarkDownrMessagebyStatus(c *gin.Context) {
+func (*AlertMangerApi) GetMarkDownMessagebyStatus2Api(c *gin.Context) {
+	key, err := utils.SelectAlertsByKey(c.Query("index"), "status", c.Query("status"))
+	if err != nil {
+		response.FailWithDetailed(c, "", map[string]any{
+			"status":  "error",
+			"message": "正在告警数查询失败",
+		})
+		return
+	}
+	response.SuccssWithDetailed(c, "", map[string]any{
+		"status": "success",
+		"number": key,
+	})
+}
+
+func (*AlertMangerApi) GetMarkDownMessagebyStatus(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index") + "_n"
 	fenye.From = c.Query("from")
@@ -125,8 +140,8 @@ func (*AlertMangerApi) PostStepFormToAlertManger(c *gin.Context) {
 	//	return
 	//}
 
-	//receiver存入mysql
-	err = mysql.InsertReceiver(receiver, step.Niname)
+	//receiver存入mysql(首字母不变小写)
+	err = mysql.InsertReceiver(step.Receiver, step.Niname)
 	if err != nil {
 		response.FailWithDetailed(c, "数据库异常："+err.Error(), map[string]any{
 			"status":  "error",
@@ -262,7 +277,9 @@ func (*AlertMangerApi) PostMarkDownTemplate(c *gin.Context) {
 func (*AlertMangerApi) GetNewMarkDownTemplate(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index")
-	err, markdown := elastics.SelectNewMarkdownTempByIndex(fenye.Index)
+	//获取index（首字母大写转小写）
+	index := utils.ActionMessages.EditFisrtCharToLower(fenye.Index)
+	err, markdown := elastics.SelectNewMarkdownTempByIndex(index)
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "获取最新模板失败", map[string]string{
@@ -276,7 +293,9 @@ func (*AlertMangerApi) GetNewMarkDownTemplate(c *gin.Context) {
 // 负责获取alertmanger去重排序过滤后的告警消息
 func (*AlertMangerApi) GetAlertMangerMessage(c *gin.Context) {
 	var fenye pojo.Fenye
-	fenye.Index = c.Query("index")
+	//获取index（首字母大写转小写）
+	index := utils.ActionMessages.EditFisrtCharToLower(c.Query("index"))
+	fenye.Index = index
 	fenye.From = c.Query("from")
 	fenye.Size = c.Query("size")
 	fenye.SortField = c.Query("sort_field")
@@ -295,7 +314,9 @@ func (*AlertMangerApi) GetAlertMangerMessage(c *gin.Context) {
 // 负责获取alertmanger去重排序过滤后的MarkDown告警消息
 func (*AlertMangerApi) GetMarkDownMessage(c *gin.Context) {
 	var fenye pojo.Fenye
-	fenye.Index = c.Query("index") + "_n"
+	//获取index（首字母大写转小写）
+	index := utils.ActionMessages.EditFisrtCharToLower(c.Query("index"))
+	fenye.Index = index + "_n"
 	fenye.From = c.Query("from")
 	fenye.Size = c.Query("size")
 	fenye.SortField = c.Query("sort_field")
@@ -322,6 +343,8 @@ func (*AlertMangerApi) PostUpdateMarkDownTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	//获取index（首字母大写转小写）
+	markdown.Receiver = utils.ActionMessages.EditFisrtCharToLower(markdown.Receiver)
 	markdown.Desc.Markdown = utils.ActionMessages.TranferSingleToDouble(markdown.Desc.Markdown)
 	err, _ = elastics.UpdateIndexForMarkDown(&markdown, markdown.Receiver)
 	if err != nil {
@@ -390,6 +413,8 @@ func (*AlertMangerApi) PostRobotConf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	//获取index（首字母大写转小写）
+	robot.Receiver = utils.ActionMessages.EditFisrtCharToLower(robot.Receiver)
 	byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
 	err = sonic.Unmarshal(byindex, &robot2)
 	if err != nil {
@@ -421,6 +446,8 @@ func (*AlertMangerApi) GetRobot(c *gin.Context) {
 	fenye.Size = c.Query("size")
 	fenye.SortField = c.Query("sort_field")
 	fenye.Asc = c.Query("asc")
+	//获取index（首字母大写转小写）
+	fenye.Index = utils.ActionMessages.EditFisrtCharToLower(fenye.Index)
 	robot, err := elastics.SearchRobot(fenye.Index)
 	if err != nil {
 		log.Print(err)
@@ -438,6 +465,8 @@ func (*AlertMangerApi) GetDelRobot(c *gin.Context) {
 	fenye.Index = c.Query("index")
 	doc_id := c.Query("robot_id")
 	atoi, _ := strconv.Atoi(doc_id)
+	//获取index（首字母大写转小写）
+	fenye.Index = utils.ActionMessages.EditFisrtCharToLower(fenye.Index)
 	err := elastics.DelDocByKey(fenye.Index+"_r", "robot_id", atoi)
 	if err != nil {
 		log.Print(err)
@@ -461,6 +490,8 @@ func (*AlertMangerApi) PostUpdateRobot(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	//获取index（首字母大写转小写）
+	robot.Receiver = utils.ActionMessages.EditFisrtCharToLower(robot.Receiver)
 	err = elastics.UpdateDocForRobot(robot.Receiver+"_r", robot)
 	if err != nil {
 		log.Print(err)
