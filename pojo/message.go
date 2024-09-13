@@ -14,10 +14,12 @@ type Context struct {
 }
 
 type Fenye struct {
-	Status    string `json:"status"`
-	Index     string `json:"index"`
-	From      string `json:"from"`
-	Size      string `json:"size"`
-	SortField string `json:"sort_field"`
-	Asc       string `json:"asc"`
+	Status     string `json:"status"`
+	Index      string `json:"index"`
+	From       string `json:"from"`
+	Size       string `json:"size"`
+	SortField  string `json:"sort_field"`
+	Asc        string `json:"asc"`
+	Time_start string `json:"time_start"`
+	Time_end   string `json:"time_end"`
 }

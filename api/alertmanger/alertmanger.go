@@ -81,7 +81,14 @@ func (*AlertMangerApi) GetMarkDownMessagebyStatus2Api(c *gin.Context) {
 	})
 }
 
-func (*AlertMangerApi) GetMarkDownMessagebyStatus(c *gin.Context) {
+//func (*AlertMangerApi) GetMarkDownMessagebyStatus2Mohu(c *gin.Context) {
+//	var fenye pojo.Fenye
+//	fenye.Time = c.Query("time")
+//	fenye.Index = c.Query("index") + "_n"
+//	fenye.Status = c.Query("status")
+//}
+
+func (*AlertMangerApi) GetMarkDownMessagebyStatus2Mohu(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index") + "_n"
 	fenye.From = c.Query("from")
@@ -89,7 +96,9 @@ func (*AlertMangerApi) GetMarkDownMessagebyStatus(c *gin.Context) {
 	fenye.SortField = c.Query("sort_field")
 	fenye.Asc = c.Query("asc")
 	fenye.Status = c.Query("status")
-	_, markdowns, number, err := elastics.SearchBySortAndUniqueAndByKey(&fenye, true, "status", fenye.Status)
+	fenye.Time_start = c.Query("time_start")
+	fenye.Time_end = c.Query("time_end")
+	_, markdowns, number, err := elastics.SearchBySortAndUniqueAndByKey2time(&fenye, true, "status", fenye.Status)
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "", map[string]any{

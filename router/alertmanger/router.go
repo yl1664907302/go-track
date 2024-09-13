@@ -28,6 +28,7 @@ func (*AlertMangerRouter) InitAlertMangerRouter(r *gin.Engine) {
 	group.GET("/origin", alertmangerApigroup.GetAlertMangerMessage)
 	group.GET("/markdown", alertmangerApigroup.GetMarkDownMessage)
 	group.GET("/markdownbystatus", alertmangerApigroup.GetMarkDownMessagebyStatus2Api)
+	group.GET("/markdownbystatus2mohu", alertmangerApigroup.GetMarkDownMessagebyStatus2Mohu)
 
 	//robot
 	group.POST("/post/newrobot", alertmangerApigroup.PostRobotConf)

@@ -12,7 +12,7 @@ import (
 func SelectAlertsByKey(receiver string, key string, value string) (int, error) {
 	var num int
 	var alerts []pojo.Alert2
-	req, err := http.Get("http://zxknsn.natappfree.cc" + ":" + "80" + "/api/v2/alerts")
+	req, err := http.Get("http://vmkk97.natappfree.cc" + ":" + "80" + "/api/v2/alerts")
 	if err != nil {
 		return 0, err
 	}

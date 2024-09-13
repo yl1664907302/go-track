@@ -256,7 +256,7 @@ func PaginateSearchEsDoc(fenye *pojo.Fenye) ([]pojo.Message, error) {
 }
 
 // 后期可以跟SearchBySortAndUnique合并
-func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 string, condition2_value string) ([]pojo.Alerts, []pojo.Newmarkdown, int, error) {
+func SearchBySortAndUniqueAndByKey2time(fenye *pojo.Fenye, key bool, condition2 string, condition2_value string) ([]pojo.Alerts, []pojo.Newmarkdown, int, error) {
 	ESclient, err := GetEsClient()
 	if err != nil {
 		log.Println(err)
@@ -274,12 +274,15 @@ func SearchBySortAndUniqueAndByKey(fenye *pojo.Fenye, key bool, condition2 strin
 		shijian = "time"
 	}
 
-	// 配置聚合语句
+	//配置时间范围查询语句
+	mohu := elastic.NewRangeQuery("time").Gte(fenye.Time_start).Lte(fenye.Time_end)
+	// 配置聚合语句,按照告警id分组查询，抽出第一个doc，去重
 	aggs := elastic.NewTermsAggregation().Field(zhiwen).Size(1000).SubAggregation("latest_alert",
 		elastic.NewTopHitsAggregation().Sort(shijian, false).Size(1).FetchSourceContext(elastic.NewFetchSourceContext(true).Include("*")))
 	// 配合bool匹配
 	boolquery := elastic.NewBoolQuery()
 	boolquery.Must(elastic.NewTermQuery(condition2, condition2_value))
+	boolquery.Must(mohu)
 	// 执行查询
 	searchResult, err := ESclient.Search().
 		Index(fenye.Index).
