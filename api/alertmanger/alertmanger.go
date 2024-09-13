@@ -90,7 +90,9 @@ func (*AlertMangerApi) GetMarkDownMessagebyStatus2Api(c *gin.Context) {
 
 func (*AlertMangerApi) GetMarkDownMessagebyStatus2Mohu(c *gin.Context) {
 	var fenye pojo.Fenye
-	fenye.Index = c.Query("index") + "_n"
+	//获取index（首字母大写转小写）
+	i := utils.ActionMessages.EditFisrtCharToLower(c.Query("index"))
+	fenye.Index = i + "_n"
 	fenye.From = c.Query("from")
 	fenye.Size = c.Query("size")
 	fenye.SortField = c.Query("sort_field")
