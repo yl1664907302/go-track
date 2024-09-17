@@ -439,6 +439,7 @@ func SearchRobot(index string) ([]pojo.Robot, error) {
 	// 执行查询
 	searchResult, err := ESclient.Search().
 		Index(index + "_r").
+		Size(1000).
 		Do(context.Background())
 	if err != nil {
 		log.Printf("Error getting response: %s", err)

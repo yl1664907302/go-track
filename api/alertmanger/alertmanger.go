@@ -3,6 +3,7 @@ package alertmanger
 import (
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
+	"go-track/action"
 	"go-track/database/mysql"
 	"go-track/elastics"
 	"go-track/going"
@@ -67,11 +68,11 @@ func (*AlertMangerApi) GetReceivers(c *gin.Context) {
 }
 
 func (*AlertMangerApi) GetMarkDownMessagebyStatus2Api(c *gin.Context) {
-	key, err := utils.SelectAlertsByKey(c.Query("index"), "status", c.Query("status"))
+	key, err := action.SelectAlertsByKey(c.Query("index"), "status", c.Query("status"))
 	if err != nil {
 		response.FailWithDetailed(c, "", map[string]any{
 			"status":  "error",
-			"message": "正在告警数查询失败",
+			"message": "正在告警数查询失败:" + err.Error(),
 		})
 		return
 	}
@@ -414,6 +415,9 @@ func (*AlertMangerApi) PostTestAlertMangerMessage(c *gin.Context) {
 // 新增钉钉机器人
 func (*AlertMangerApi) PostRobotConf(c *gin.Context) {
 	body, err := c.GetRawData()
+	if err != nil {
+		log.Println(err)
+	}
 	var robot pojo.Robot
 	var robot2 pojo.Robot
 	err = sonic.Unmarshal(body, &robot)
@@ -421,30 +425,48 @@ func (*AlertMangerApi) PostRobotConf(c *gin.Context) {
 		log.Print(err)
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.FailWithDetailed(c, "Robot失败存入es", map[string]string{
+			"status":  "error",
+			"message": "失败创建机器人,由于:" + err.Error(),
+		})
 		return
 	}
 	//获取index（首字母大写转小写）
 	robot.Receiver = utils.ActionMessages.EditFisrtCharToLower(robot.Receiver)
-	byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
-	err = sonic.Unmarshal(byindex, &robot2)
+	key, err := elastics.JudgeIndex(robot.Receiver + "_r")
 	if err != nil {
-		response.FailWithDetailed(c, "Robot失败存入es", map[string]int{
-			"code": http.StatusInternalServerError,
-		})
+		log.Println(err)
 	}
-
-	//复制最新的id
-	robot.Robot_id = robot2.Robot_id + 1
+	num, err := elastics.SelectNumByIndex(robot.Receiver + "_r")
+	if key == 1 && num != 0 {
+		byindex, err := elastics.SelectNewDocByindex(robot.Receiver+"_r", "robot_id", &pojo.Robot{})
+		if err != nil {
+			log.Println(err)
+		}
+		err = sonic.Unmarshal(byindex, &robot2)
+		if err != nil {
+			response.FailWithDetailed(c, "Robot失败存入es", map[string]string{
+				"status":  "error",
+				"message": "失败创建机器人:" + err.Error(),
+			})
+			return
+		}
+		//复制最新的id
+		robot.Robot_id = robot2.Robot_id + 1
+	} else if key == 0 {
+		robot.Robot_id = 1
+	}
 	err, _ = elastics.CreateIndexForRobot(&robot, robot.Receiver)
 	if err != nil {
 		log.Print(err)
-		response.FailWithDetailed(c, "Robot失败存入es", map[string]int{
-			"code": http.StatusInternalServerError,
+		response.FailWithDetailed(c, "Robot失败存入es", map[string]string{
+			"status":  "error",
+			"message": "失败创建机器人:" + robot.Robot_name,
 		})
 	} else {
-		response.SuccssWithDetailed(c, "Robot成功存入es", map[string]int{
-			"code": http.StatusOK,
+		response.SuccssWithDetailed(c, "Robot成功存入es", map[string]string{
+			"status":  "success",
+			"message": "成功创建机器人:" + robot.Robot_name,
 		})
 	}
 }
@@ -463,15 +485,21 @@ func (*AlertMangerApi) GetRobot(c *gin.Context) {
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "robot实例获取失败", map[string]string{
-			"code": err.Error(),
+			"status":  "error",
+			"message": "robot实例获取失败",
 		})
+		return
 	} else {
-		response.SuccssWithDetailed(c, "robot实例获取成功", robot)
+		response.SuccssWithDetailed(c, "robot实例获取成功", map[string]any{
+			"status":  "success",
+			"message": "成功查询机器人",
+			"robots":  robot,
+		})
 	}
 }
 
 // 删除告警机器人
-func (*AlertMangerApi) GetDelRobot(c *gin.Context) {
+func (*AlertMangerApi) DelRobot(c *gin.Context) {
 	var fenye pojo.Fenye
 	fenye.Index = c.Query("index")
 	doc_id := c.Query("robot_id")
@@ -482,10 +510,14 @@ func (*AlertMangerApi) GetDelRobot(c *gin.Context) {
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "robot删除失败", map[string]string{
-			"code": err.Error(),
+			"status":  "error",
+			"message": "robot实例获取失败:" + err.Error(),
 		})
 	} else {
-		response.SuccssWithDetailed(c, "robot删除成功", "")
+		response.SuccssWithDetailed(c, "robot删除成功", map[string]string{
+			"status":  "success",
+			"message": "成功删除机器人",
+		})
 	}
 }
 

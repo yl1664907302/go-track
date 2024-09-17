@@ -7,10 +7,10 @@ system:
     mysqlpassword: "166490"
 #    mysqldatabasename: "kube"
   elasticsearch:
-    eshost: "eshost.natapp1.cc"
-    esport: "80"
+    eshost: "192.168.163.66"
+    esport: "9200"
     username: "elastic"
     password: "123456"
   alertmanger_api:
-    host: "vmkk97.natappfree.cc"
-    port: "80"
+    host: "192.168.163.66"
+    port: "9093"

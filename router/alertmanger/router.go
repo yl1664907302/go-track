@@ -34,7 +34,7 @@ func (*AlertMangerRouter) InitAlertMangerRouter(r *gin.Engine) {
 	group.POST("/post/newrobot", alertmangerApigroup.PostRobotConf)
 	group.POST("/post/updaterobot", alertmangerApigroup.PostUpdateRobot)
 	group.GET("/robot", alertmangerApigroup.GetRobot)
-	group.GET("/delrobot", alertmangerApigroup.GetDelRobot)
+	group.DELETE("/delrobot", alertmangerApigroup.DelRobot)
 
 	//查询Receiver信息
 	group.GET("/receivers", alertmangerApigroup.GetReceivers)

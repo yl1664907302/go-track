@@ -59,6 +59,18 @@ func UpdateDoc(index string, doc_id string, any interface{}) error {
 	return err
 }
 
+func SelectNumByIndex(index string) (int64, error) {
+	ESclient, err := GetEsClient()
+	if err != nil {
+		return 0, err
+	}
+	do, err := ESclient.Count(index).Do(context.Background())
+	if err != nil {
+		log.Println(err)
+	}
+	return do, err
+}
+
 func SelectNewDocidByindex(index string, key string) (string, error) {
 	var doc_id string
 	ESclient, err := GetEsClient()
@@ -90,10 +102,10 @@ func SelectNewDocByindex(index string, key string, any interface{}) (json.RawMes
 		return nil, err
 	}
 	searchResult, err := ESclient.Search().
-		Index(index).                // 设置索引名称
-		Sort(key+".keyword", false). // 根据时间戳字段排序，false表示降序
-		Size(1).                     // 只获取一条记录
-		Do(context.Background())     // 执行查询
+		Index(index).            // 设置索引名称
+		Sort(key, false).        // 根据时间戳字段排序，false表示降序
+		Size(1).                 // 只获取一条记录
+		Do(context.Background()) // 执行查询
 	if err != nil {
 		return nil, err
 	}

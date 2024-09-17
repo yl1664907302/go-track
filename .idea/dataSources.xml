@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="es-test" uuid="b4dc3af4-fe0b-4eba-9b29-49f61bbc5b30">
-      <driver-ref>elasticsearch</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.elasticsearch.xpack.sql.jdbc.EsDriver</jdbc-driver>
-      <jdbc-url>jdbc:es://192.168.163.66:9200/</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
     <data-source source="LOCAL" name="track@localhost" uuid="524f904a-b7d0-483f-97f4-49e9759b83e2">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
@@ -32,6 +25,13 @@
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://172.170.10.52:3306</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="@192.168.163.66" uuid="6e59271f-f614-4552-a07c-088edcff07f4">
+      <driver-ref>elasticsearch</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.elasticsearch.xpack.sql.jdbc.EsDriver</jdbc-driver>
+      <jdbc-url>jdbc:es://192.168.163.66:9200/</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
