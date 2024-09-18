@@ -7,8 +7,8 @@ system:
     mysqlpassword: "166490"
 #    mysqldatabasename: "kube"
   elasticsearch:
-    eshost: "192.168.163.66"
-    esport: "9200"
+    eshost: "eshost.natapp1.cc"
+    esport: "80"
     username: "elastic"
     password: "123456"
   alertmanger_api:

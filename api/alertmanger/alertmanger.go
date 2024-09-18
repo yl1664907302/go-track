@@ -358,32 +358,47 @@ func (*AlertMangerApi) PostUpdateMarkDownTemplate(c *gin.Context) {
 	//获取index（首字母大写转小写）
 	markdown.Receiver = utils.ActionMessages.EditFisrtCharToLower(markdown.Receiver)
 	markdown.Desc.Markdown = utils.ActionMessages.TranferSingleToDouble(markdown.Desc.Markdown)
-	err, _ = elastics.UpdateIndexForMarkDown(&markdown, markdown.Receiver)
+	num, err := elastics.SelectNumByIndex(markdown.Receiver + "_t")
 	if err != nil {
 		log.Print(err)
 		response.FailWithDetailed(c, "更新markdown模板失败", map[string]string{
-			"code": err.Error(),
+			"status":  "success",
+			"message": "更新markdown模板失败:" + err.Error(),
 		})
-	} else {
-		response.SuccssWithDetailed(c, "更新markdown模板成功", markdown)
 	}
-}
+	if num != 0 {
+		err, _ = elastics.UpdateIndexForMarkDown(&markdown, markdown.Receiver)
+		if err != nil {
+			log.Print(err)
+			response.FailWithDetailed(c, "更新markdown模板失败", map[string]string{
+				"status":  "success",
+				"message": "更新markdown模板失败:" + err.Error(),
+			})
+		} else {
+			response.SuccssWithDetailed(c, "更新markdown模板成功", map[string]string{
+				"status":  "success",
+				"message": "完成更新markdown模板:" + markdown.Receiver,
+			})
+		}
+	} else {
+		markdown.Desc.Markdown = utils.ActionMessages.TranferSingleToDouble(markdown.Desc.Markdown)
+		markdown.Desc.Maketime = time.Now().Format("2006-01-02 15:04:05")
+		err, _ = elastics.CreateIndexForMarkDown(&markdown.Desc, markdown.Receiver)
+		if err != nil {
+			log.Print(err)
+			response.FailWithDetailed(c, "更新markdown模板失败", map[string]string{
+				"status":  "success",
+				"message": "更新markdown模板失败:" + err.Error(),
+			})
+		} else {
+			response.SuccssWithDetailed(c, "更新markdown模板成功", map[string]string{
+				"status":  "success",
+				"message": "完成更新markdown模板:" + markdown.Receiver,
+			})
+		}
+	}
 
-//func (*AlertMangerApi) GetDelMarkdownTemplate(c *gin.Context) {
-//	var fenye pojo.Fenye
-//	fenye.Index = c.Query("index")
-//	fenye.Index = c.Query("")
-//	elastics.DelDocByKey(fenye.Index, "", "")
-//	if err != nil {
-//		log.Print(err)
-//		response.FailWithDetailed(c, "去重排序查询markdown实例索引失败", map[string]string{
-//			"code": err.Error(),
-//		})
-//	} else {
-//		response.SuccssWithDetailed(c, "去重排序查询markdown实例索引成功", markdowns)
-//	}
-//
-//}
+}
 
 // 测试手动发送消息到go-track
 func (*AlertMangerApi) PostTestAlertMangerMessage(c *gin.Context) {

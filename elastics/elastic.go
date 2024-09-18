@@ -124,7 +124,7 @@ func UpdateIndexForMarkDown(message *pojo.Markdown, index string) (error, string
 
 func SelectNewMarkdownTempByIndex(index string) (error, *pojo.Markdown) {
 	var markdown pojo.Markdown
-	docRaw, err := SelectNewDocByindex(index+"_t", "maketime", pojo.Markdown{})
+	docRaw, err := SelectNewDocByindex(index+"_t", "maketime.keyword", pojo.Markdown{})
 	if err != nil {
 		return err, nil
 	}
